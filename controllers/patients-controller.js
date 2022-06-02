@@ -1,56 +1,60 @@
-const HttpError=require('../models/http-error');
-const Patient=require('../models/patient');
+const HttpError = require('../models/http-error');
+const Patient = require('../models/patient');
 
-const DUMMY_PATIENTS=[ {id:'p1',sirname:'Μαργαρίτης',name:'Γρηγόρης',fathersName:'Βασίλειος',age:'23',tel:'6984651329',amka:'011019983232'},
-{id:'p2',sirname:'Μαργαρίτης',name:'Γρηγόρης',fathersName:'Βασίλειος',age:'23',tel:'6984651329',amka:'011019983232'},
-{id:'p3',sirname:'Μαργαρίτης',name:'Γρηγόρης',fathersName:'Βασίλειος',age:'23',tel:'6984651329',amka:'011019983232'},
-{id:'p4',sirname:'Μαργαρίτης',name:'Γρηγόρης',fathersName:'Βασίλειος',age:'23',tel:'6984651329',amka:'011019983232'},
-{id:'p5',sirname:'Μαργαρίτης',name:'Γρηγόρης',fathersName:'Βασίλειος',age:'23',tel:'6984651329',amka:'011019983232'}]
+const DUMMY_PATIENTS = [{ id: 'p1', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
+{ id: 'p2', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
+{ id: 'p3', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
+{ id: 'p4', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
+{ id: 'p5', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' }]
 
-const getAllpatients=(req,res,next)=>{
+const getAllpatients = (req, res, next) => {
     res.json(DUMMY_PATIENTS)
     console.log(res.statusCode);
 }
 
-const findPatientById=(req,res,next)=>{
-    const patientId=req.params.pid;
-    const patient=DUMMY_PATIENTS.find(p=>{
-        return p.id===patientId;
-    })
-    if (!patient){
-        console.log('here')
-       return next (new HttpError('Could not find a patient for the provided id.',404));    
-    }
-    res.json(patient);
-}
-
-const findPatientByIdBasic=(req,res,next)=>{
-    const patientId=req.params.pid;
-    console.log(patientId)
-    res.json({stop:"yes"})
-}
-const createPatient=async (req,res,next)=>{
-    const {name,sirname,fathersName,age,tel,amka}=req.body;
-    const createdPatient=new Patient({
-       name,
-       sirname,
-       fathersName,
-       age,
-       tel,
-       amka
-    });
-    try{
-        await createdPatient.save();
-    }catch(err){
-        const error=new HttpError('Could not create Patient,please try again.',500);
+const findPatientById = async (req, res, next) => {
+    const patientId = req.params.pid;
+    let patient;
+    try {
+        patient = await Patient.findById(patientId);
+    } catch (err) {
+        const error = HttpError('Something went wrong,could not find a patient', 500);
         return next(error);
-    };  
-    
-    res.status(201).json({patient:createdPatient})
+    }
+    if (!patient) {
+        console.log('here')
+        return next(new HttpError('Could not find a patient for the provided id.', 404));
+    }
+    res.json({patient:patient.toObject({getters:true})});
+}
+
+const findPatientByIdBasic = (req, res, next) => {
+    const patientId = req.params.pid;
+    console.log(patientId)
+    res.json({ stop: "yes" })
+}
+const createPatient = async (req, res, next) => {
+    const { name, sirname, fathersName, age, tel, amka } = req.body;
+    const createdPatient = new Patient({
+        name,
+        sirname,
+        fathersName,
+        age,
+        tel,
+        amka
+    });
+    try {
+        await createdPatient.save();
+    } catch (err) {
+        const error = new HttpError('Could not create Patient,please try again.', 500);
+        return next(error);
+    };
+
+    res.status(201).json({ patient: createdPatient })
 
 }
 
-exports.getAllpatients=getAllpatients;
-exports.findPatientById=findPatientById;
-exports.findPatientByIdBasic=findPatientByIdBasic;
-exports.createPatient=createPatient;
+exports.getAllpatients = getAllpatients;
+exports.findPatientById = findPatientById;
+exports.findPatientByIdBasic = findPatientByIdBasic;
+exports.createPatient = createPatient;
