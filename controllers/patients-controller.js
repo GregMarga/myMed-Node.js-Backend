@@ -1,6 +1,7 @@
 const HttpError = require('../models/http-error');
 const Patient = require('../models/patient');
 
+
 const DUMMY_PATIENTS = [{ id: 'p1', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
 { id: 'p2', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
 { id: 'p3', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
@@ -41,13 +42,15 @@ const createPatient = async (req, res, next) => {
         fathersName,
         age,
         tel,
-        amka
+        amka,
+        visits:[]
     });
     try {
         await createdPatient.save();
     } catch (err) {
-        const error = new HttpError('Could not create Patient,please try again.', 500);
-        return next(error);
+        console.log(err)
+        // const error = new HttpError('Could not create Patient,please try again.', 500);
+        // return next(error);
     };
 
     res.status(201).json({ patient: createdPatient })

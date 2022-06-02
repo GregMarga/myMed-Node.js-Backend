@@ -8,7 +8,9 @@ const patientSchema= new Schema({
     fathersName:{type:String,required:false},
     age:{type:String,required:false},    
     tel:{type:String,required:true},
-    amka:{type:String,required:false}
+    amka:{type:String,required:false},
+    // doctor:{type:mongoose.Types.ObjectId,required:true,ref:'User'},
+    visits:[{type:mongoose.Types.ObjectId,required:true,ref:'Visit'}]
 })
 
 module.exports=mongoose.model('Patient',patientSchema);
