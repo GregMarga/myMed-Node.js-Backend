@@ -48,9 +48,8 @@ const createPatient = async (req, res, next) => {
     try {
         await createdPatient.save();
     } catch (err) {
-        console.log(err)
-        // const error = new HttpError('Could not create Patient,please try again.', 500);
-        // return next(error);
+        const error = new HttpError('Could not create Patient,please try again.', 500);
+        return next(error);
     };
 
     res.status(201).json({ patient: createdPatient })

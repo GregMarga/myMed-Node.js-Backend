@@ -35,7 +35,7 @@ const createVisit = async (req, res, next) => {
         return next(error);
     }
 
-    res.status(201).json({ place: createdVisit });
+    res.status(201).json({ visit: createdVisit });
 }
 
 exports.createVisit=createVisit;
