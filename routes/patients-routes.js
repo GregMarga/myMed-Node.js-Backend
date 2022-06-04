@@ -3,6 +3,7 @@ const { route } = require('express/lib/application');
 
 const patientControllers=require('../controllers/patients-controller');
 const visitControllers=require('../controllers/visits-controller');
+const basicsControllers=require('../controllers/basics-controller');
 
 const router =express.Router();
 
@@ -13,7 +14,7 @@ router.post('/',patientControllers.createPatient);
 
 router.get('/:pid',patientControllers.findPatientById);
 
-router.get('/:pid/basic',patientControllers.findPatientByIdBasic);
+router.get('/:pid/basic',basicsControllers.getBasics);
 
 router.post('/:pid/visits',visitControllers.createVisit);
 
