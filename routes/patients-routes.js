@@ -14,6 +14,10 @@ router.post('/',patientControllers.createPatient);
 
 router.get('/:pid',patientControllers.findPatientById);
 
+router.patch('/:pid',patientControllers.updatePatient);
+
+router.delete('/:pid',patientControllers.deletePatient);
+
 router.get('/:pid/basic',basicsControllers.getBasics);
 
 router.post('/:pid/visits',visitControllers.createVisit);
