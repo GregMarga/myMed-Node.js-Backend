@@ -1,5 +1,7 @@
+const mongoose = require('mongoose');
 const HttpError = require('../models/http-error');
 const Anamnistiko = require('../models/anamnistiko');
+const Patient=require('../models/patient')
 
 const getAnamnstiko=async (req,res,next)=>{
     const userId=req.params.pid;
@@ -12,7 +14,7 @@ const getAnamnstiko=async (req,res,next)=>{
     res.json(anamnistiko)
 };
 const createAnamnistiko=async(req,res,next)=>{
-    const userId=req.params.pid;
+    const patientId=req.params.pid;
     const { allergies,cleronomical,personal,surgeries,drug_usage,others } = req.body;
     const createdAnamnistiko = new Anamnistiko({
         allergies,
@@ -20,15 +22,33 @@ const createAnamnistiko=async(req,res,next)=>{
         personal,
         surgeries,
         drug_usage,
-        others
-        // patient:userId
+        others,
+        patient:patientId
     });
+    let patient;
     try {
-        await createdAnamnistiko.save();
+        patient = await Patient.findById(patientId);
     } catch (err) {
-        const error = new HttpError("Could not create Patient's History,please try again.", 500);
+        return next(new HttpError('Creating anamnistiko  failed.', 500));
+    }
+    if (!patient) {
+        return next(new HttpError('Could not find a Patient for provided id.', 404));
+    }
+    try {
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await createdAnamnistiko.save({ session: sess });
+        patient.anamnistiko=createdAnamnistiko;
+        await patient.save({ session: sess });
+        await sess.commitTransaction();
+    } catch (err) {
+        console.log(err)
+        const error = new HttpError(
+            'Creating anamnistiko failed, please try again.',
+            500
+        );
         return next(error);
-    };
+    }
 
     res.status(201).json({ anamnistiko: createdAnamnistiko})
 }

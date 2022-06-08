@@ -4,16 +4,27 @@ const Patient = require('../models/patient');
 const Visit = require('../models/visit');
 
 const createVisit = async (req, res, next) => {
-    const { date, diagnosis, patient } = req.body;
+    const patientId=req.params.pid;
+    const { date, diagnosis,geniki_eikona,piesi,weight,height,sfiksis,tekt,smkt,test_volume,others,uid} = req.body;
 
     const createdVisit = new Visit({
         date,
         diagnosis,
-        patient
+        geniki_eikona,
+        piesi,
+        sfiksis,
+        weight,
+        height,
+        smkt,
+        tekt,
+        test_volume,
+        others,
+        patient:patientId,
+        doctor:uid
     });
     let visitor;
     try {
-        visitor = await Patient.findById(patient);
+        visitor = await Patient.findById(patientId);
     } catch (err) {
         return next(new HttpError('Creating new Visit failed.', 500));
     }
@@ -28,6 +39,7 @@ const createVisit = async (req, res, next) => {
         await visitor.save({ session: sess });
         await sess.commitTransaction();
     } catch (err) {
+        console.log(err)
         const error = new HttpError(
             'Creating visit failed, please try again.',
             500

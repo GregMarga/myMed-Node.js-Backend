@@ -1,5 +1,7 @@
+const mongoose = require('mongoose');
 const HttpError = require('../models/http-error');
 const Basics = require('../models/basics');
+const Patient = require('../models/patient');
 
 const getBasics=async (req,res,next)=>{
     const userId=req.params.pid;
@@ -12,7 +14,7 @@ const getBasics=async (req,res,next)=>{
     res.json(basics)
 };
 const createBasics=async(req,res,next)=>{
-    const userId=req.params.pid;
+    const patientId=req.params.pid;
     const { dateOfBirth, placeOfBirth, job, familyStatus, gender, address,area,postalCode } = req.body;
     const createdBasics = new Basics({
         dateOfBirth,
@@ -23,16 +25,34 @@ const createBasics=async(req,res,next)=>{
         address,
         area,
         postalCode,
-        // patient:userId
+        patient:patientId
     });
+    let patient;
     try {
-        await createdBasics.save();
+        patient = await Patient.findById(patientId);
     } catch (err) {
-        const error = new HttpError('Could not create Patient,please try again.', 500);
+        return next(new HttpError('Creating basic info  failed.', 500));
+    }
+    if (!patient) {
+        return next(new HttpError('Could not find a Patient for provided id.', 404));
+    }
+    try {
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await createdBasics.save({ session: sess });
+        patient.basic=createdBasics;
+        await patient.save({ session: sess });
+        await sess.commitTransaction();
+    } catch (err) {
+        console.log(err)
+        const error = new HttpError(
+            'Creating basic info failed, please try again.',
+            500
+        );
         return next(error);
-    };
+    }
 
-    res.status(201).json({ patient: createdBasics })
+    res.status(201).json({ patient: createdBasics });
 }
 
 exports.getBasics=getBasics;

@@ -10,8 +10,8 @@ const basicsSchema = Schema({
     gender: { type: String, required: false },
     address: { type: String, required: false },
     area: { type: String, required: false },
-    postalCode:{type:String,required:false}
-    // patient:{type:mongoose.Types.ObjectId,required:true,ref:'Patient'}
+    postalCode:{type:String,required:false},
+    patient:{type:mongoose.Types.ObjectId,required:true,ref:'Patient'}
 })
 
 

@@ -1,6 +1,7 @@
 const { default: mongoose } = require('mongoose');
 const HttpError = require('../models/http-error');
 const Patient = require('../models/patient');
+const User=require('../models/user');
 
 
 const DUMMY_PATIENTS = [{ id: 'p1', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
@@ -80,7 +81,7 @@ const deletePatient = async (req, res, next) => {
     res.json(patient)
 };
 const createPatient = async (req, res, next) => {
-    const { sirname, name, fathersName, age, tel, amka } = req.body;
+    const { sirname, name, fathersName, age, tel, amka,uid } = req.body;
     const myId = mongoose.Types.ObjectId();
     const createdPatient = new Patient({
         _id: myId,
@@ -90,15 +91,38 @@ const createPatient = async (req, res, next) => {
         age,
         tel,
         amka,
+        doctor:uid,
+        basic:null,
+        // anamnistiko:null,
+        // files:[],
+        // lab_tests:[],
         visits: []
     });
 
+    let doctor;
     try {
-        await createdPatient.save();
+        doctor = await User.findById(uid);
     } catch (err) {
-        const error = new HttpError('Could not create Patient,please try again.', 500);
+        console.log(err)
+        return next(new HttpError('Creating new Patient failed.', 500));
+    }
+    if (!doctor) {
+        return next(new HttpError('Could not find a User for provided id.', 404));
+    }
+    try {
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await createdPatient.save({ session: sess });
+        doctor.patients.push(createdPatient);
+        await doctor.save({ session: sess });
+        await sess.commitTransaction();
+    } catch (err) {
+        const error = new HttpError(
+            'Creating patient failed, please try again.',
+            500
+        );
         return next(error);
-    };
+    }
     res.status(201).json({ _id: myId, name, sirname, fathersName, age, tel, amka });
 
 };

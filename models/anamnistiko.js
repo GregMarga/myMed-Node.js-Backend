@@ -11,7 +11,7 @@ const anamnistikoSchema = Schema({
     habits: { type: String, required: false },
     others: { type: String, required: false },
     
-    // patient:{type:mongoose.Types.ObjectId,required:true,ref:'Patient'}
+    patient:{type:mongoose.Types.ObjectId,required:true,ref:'Patient'}
 })
 
 module.exports = mongoose.model('Anamnistiko', anamnistikoSchema);
