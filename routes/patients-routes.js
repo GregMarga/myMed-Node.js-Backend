@@ -24,7 +24,11 @@ router.get('/:pid/basic',basicsControllers.getBasics);
 
 router.post('/:pid/basic',basicsControllers.createBasics);
 
+router.get('/:pid/anamnistiko',anaminstikoControllers.getAnamnstiko);
+
 router.post('/:pid/anamnistiko',anaminstikoControllers.createAnamnistiko);
+
+router.get('/:pid/visits',visitControllers.getPatientVisit);
 
 router.post('/:pid/visits',visitControllers.createVisit);
 

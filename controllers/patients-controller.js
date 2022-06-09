@@ -31,7 +31,6 @@ const findPatientById = async (req, res, next) => {
         return next(error);
     }
     if (!patient) {
-        console.log('here')
         return next(new HttpError('Could not find a patient for the provided id.', 404));
     }
     res.json(patient);

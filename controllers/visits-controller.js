@@ -3,6 +3,18 @@ const HttpError = require('../models/http-error');
 const Patient = require('../models/patient');
 const Visit = require('../models/visit');
 
+const getPatientVisit=async (req,res,next)=>{
+    const userId=req.params.pid;
+    let visits;
+    try{
+        visits=await Visit.find({patient:userId}).sort({ field: 'asc', _id: -1 });
+    }catch(err){
+        return next(new HttpError('Fetching basics info failed,please try again later.',500));
+    }
+    res.json(visits)
+}
+
+
 const createVisit = async (req, res, next) => {
     const patientId=req.params.pid;
     const { date, diagnosis,geniki_eikona,piesi,weight,height,sfiksis,tekt,smkt,test_volume,others,uid} = req.body;
@@ -50,4 +62,6 @@ const createVisit = async (req, res, next) => {
     res.status(201).json({ visit: createdVisit });
 }
 
+
+exports.getPatientVisit=getPatientVisit;
 exports.createVisit=createVisit;

@@ -7,7 +7,7 @@ const getBasics=async (req,res,next)=>{
     const userId=req.params.pid;
     let basics;
     try{
-        basics=await Basics.find({patient:userId});
+        basics=await Basics.findOne({patient:userId}).sort({ field: 'asc', _id: -1 });
     }catch(err){
         return next(new HttpError('Fetching basics info failed,please try again later.',500));
     }

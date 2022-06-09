@@ -7,7 +7,7 @@ const getAnamnstiko=async (req,res,next)=>{
     const userId=req.params.pid;
     let anamnistiko;
     try{
-        anamnistiko=await Anamnistiko.find({patient:userId});
+        anamnistiko=await Anamnistiko.findOne({patient:userId}).sort({ field: 'asc', _id: -1 });
     }catch(err){
         return next(new HttpError('Fetching history info failed,please try again later.',500));
     }
