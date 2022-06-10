@@ -9,9 +9,19 @@ const getPatientVisit=async (req,res,next)=>{
     try{
         visits=await Visit.find({patient:userId}).sort({ field: 'asc', _id: -1 });
     }catch(err){
-        return next(new HttpError('Fetching basics info failed,please try again later.',500));
+        return next(new HttpError('Fetching visits failed,please try again later.',500));
     }
     res.json(visits)
+}
+const getPatientVisitById=async (req,res,next)=>{
+    const visitId=req.params.vid;
+    let visit;
+    try{
+        visit=await Visit.findById(visitId);
+    }catch(err){
+        return next(new HttpError('Fetching visit info failed,please try again later.',500));
+    }
+    res.json(visit)
 }
 
 
@@ -62,6 +72,6 @@ const createVisit = async (req, res, next) => {
     res.status(201).json({ visit: createdVisit });
 }
 
-
+exports.getPatientVisitById=getPatientVisitById;
 exports.getPatientVisit=getPatientVisit;
 exports.createVisit=createVisit;

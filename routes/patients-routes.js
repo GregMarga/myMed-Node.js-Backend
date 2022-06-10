@@ -30,6 +30,10 @@ router.post('/:pid/anamnistiko',anaminstikoControllers.createAnamnistiko);
 
 router.get('/:pid/visits',visitControllers.getPatientVisit);
 
+
+router.get('/:pid/visits/:vid',visitControllers.getPatientVisitById);
+
+
 router.post('/:pid/visits',visitControllers.createVisit);
 
 router.post('/:pid/lab_tests',labTestControllers.createLabTest);
