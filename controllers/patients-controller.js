@@ -4,11 +4,6 @@ const Patient = require('../models/patient');
 const User=require('../models/user');
 
 
-const DUMMY_PATIENTS = [{ id: 'p1', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
-{ id: 'p2', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
-{ id: 'p3', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
-{ id: 'p4', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' },
-{ id: 'p5', sirname: 'Μαργαρίτης', name: 'Γρηγόρης', fathersName: 'Βασίλειος', age: '23', tel: '6984651329', amka: '011019983232' }]
 
 const getAllpatients = async (req, res, next) => {
     let patients;
@@ -68,12 +63,17 @@ const deletePatient = async (req, res, next) => {
     const patientId = req.params.pid;
     let patient;
     try {
-        patient = await Patient.findById(patientId);
+        patient = await Patient.findById(patientId).populate('doctor');
     } catch (err) {
         return next(new HttpError('Could not find the patient to delete,please try again later.', 500));
     }
     try {
-        await patient.remove();
+        const sess=await mongoose.startSession();
+        sess.startTransaction();
+        await patient.remove({session:sess});
+        patient.doctor.patients.pull(patient);
+        await patient.doctor.save({session:sess});
+        await sess.commitTransaction();
     } catch (err) {
         return next(new HttpError('Could not delete patient, please try again later.', 500));
     }
@@ -92,7 +92,7 @@ const createPatient = async (req, res, next) => {
         amka,
         doctor:uid,
         basic:null,
-        // anamnistiko:null,
+        anamnistiko:null,
         // files:[],
         // lab_tests:[],
         visits: []

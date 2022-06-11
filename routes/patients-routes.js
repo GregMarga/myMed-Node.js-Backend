@@ -33,6 +33,9 @@ router.get('/:pid/visits',visitControllers.getPatientVisit);
 
 router.get('/:pid/visits/:vid',visitControllers.getPatientVisitById);
 
+router.patch('/:pid/visits/:vid',visitControllers.updateVisit);
+
+router.delete('/:pid/visits/:vid',visitControllers.deleteVisit);
 
 router.post('/:pid/visits',visitControllers.createVisit);
 
