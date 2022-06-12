@@ -6,9 +6,11 @@ const visitControllers=require('../controllers/visits-controller');
 const basicsControllers=require('../controllers/basics-controller');
 const anaminstikoControllers=require('../controllers/anamnistiko-controller');
 const labTestControllers=require('../controllers/labTests-controller');
+const checkAuth=require('../middleware/check-auth');
 
 const router =express.Router();
 
+router.use(checkAuth);
 
 router.get('/',patientControllers.getAllpatients);
 
