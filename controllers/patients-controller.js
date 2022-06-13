@@ -1,7 +1,7 @@
 const { default: mongoose } = require('mongoose');
 const HttpError = require('../models/http-error');
 const Patient = require('../models/patient');
-const User=require('../models/user');
+const User = require('../models/user');
 
 
 
@@ -42,6 +42,11 @@ const updatePatient = async (req, res, next) => {
         const error = new HttpError('Something went wrong,could not update patient', 500);
         return next(error);
     }
+
+    if (patient.doctor.toString() !== req.userData.userId) {
+        return next(new HttpError('You are not allowed to edit this patient', 401));
+    }
+
     patient.name = name;
     patient.sirname = sirname;
     patient.age = age;
@@ -54,6 +59,7 @@ const updatePatient = async (req, res, next) => {
         const error = new HttpError('Could not update Patient,please try again.', 500);
         return next(error);
     };
+
     res.status(200).json(patient);
 
 
@@ -67,20 +73,24 @@ const deletePatient = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Could not find the patient to delete,please try again later.', 500));
     }
+    if (patient.doctor.id !== req.userData.userId) {
+        return next(new HttpError('You are not allowed to delete this patient', 401));
+    }
     try {
-        const sess=await mongoose.startSession();
+        const sess = await mongoose.startSession();
         sess.startTransaction();
-        await patient.remove({session:sess});
+        await patient.remove({ session: sess });
         patient.doctor.patients.pull(patient);
-        await patient.doctor.save({session:sess});
+        await patient.doctor.save({ session: sess });
         await sess.commitTransaction();
     } catch (err) {
         return next(new HttpError('Could not delete patient, please try again later.', 500));
     }
+
     res.json(patient)
 };
 const createPatient = async (req, res, next) => {
-    const { sirname, name, fathersName, age, tel, amka,uid } = req.body;
+    const { sirname, name, fathersName, age, tel, amka, uid } = req.body;
     const myId = mongoose.Types.ObjectId();
     const createdPatient = new Patient({
         _id: myId,
@@ -90,9 +100,9 @@ const createPatient = async (req, res, next) => {
         age,
         tel,
         amka,
-        doctor:uid,
-        basic:null,
-        anamnistiko:null,
+        doctor: uid,
+        basic: null,
+        anamnistiko: null,
         // files:[],
         // lab_tests:[],
         visits: []
@@ -116,6 +126,7 @@ const createPatient = async (req, res, next) => {
         await doctor.save({ session: sess });
         await sess.commitTransaction();
     } catch (err) {
+        console.log(err)
         const error = new HttpError(
             'Creating patient failed, please try again.',
             500
