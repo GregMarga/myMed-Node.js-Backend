@@ -3,23 +3,45 @@ const HttpError = require('../models/http-error');
 const Blood = require('../models/labTests/blood');
 const Parathyro = require('../models/labTests/parathyro');
 const Thyro = require('../models/labTests/thyro');
-const Patient=require('../models/patient')
+const Patient = require('../models/patient');
 
-const getAnamnstiko=async (req,res,next)=>{
-    const userId=req.params.pid;
-    let anamnistiko;
-    try{
-        anamnistiko=await Anamnistiko.find({patient:userId});
-    }catch(err){
-        return next(new HttpError('Fetching history info failed,please try again later.',500));
+const getLabTests = async (req, res, next) => {
+    const userId = req.params.pid;
+    let lab_tests = [];
+    try {
+        blood_tests = await Blood.find({ patient: userId });
+        blood_tests.map((test) => {
+            test = { ...test, type: 'blood' }
+            lab_tests.push(test)
+        });
+    } catch (err) {
+        return next(new HttpError('Fetching lab test info failed,please try again later.', 500));
     }
-    res.json(anamnistiko)
+    try {
+        parathyro_tests = await Parathyro.find({ patient: userId });
+        parathyro_tests.map((test) => {
+            test = { ...test, type: 'parathyro' }
+            lab_tests.push(test)
+        });
+    } catch (err) {
+        return next(new HttpError('Fetching lab test info failed,please try again later.', 500));
+    }
+    try {
+        thyro_tests = await Thyro.find({ patient: userId });
+        thyro_tests.map((test) => {
+            test = { ...test, type: 'thyro' }
+            lab_tests.push(test)
+        });
+    } catch (err) {
+        return next(new HttpError('Fetching lab test info failed,please try again later.', 500));
+    }
+    res.json(lab_tests);
 };
-const createLabTest=async(req,res,next)=>{
-    const patientId=req.params.pid;
-    const [type,date,visitDate]=[req.body.type,req.body.date,req.body.visitDate];
-    if (type==='blood'){
-        const { kallio,natrio,asbestio,ht,mcv,sgot,b12,hb } = req.body;
+const createLabTest = async (req, res, next) => {
+    const patientId = req.params.pid;
+    const [type, date, visitDate] = [req.body.type, req.body.date, req.body.visitDate];
+    if (type === 'blood') {
+        const { kallio, natrio, asbestio, ht, mcv, sgot, b12, hb } = req.body;
         const createdBlood = new Blood({
             date,
             visitDate,
@@ -27,15 +49,17 @@ const createLabTest=async(req,res,next)=>{
             natrio,
             asbestio,
             ht,
-            mcv,sgot,
+            mcv, sgot,
             b12,
             hb,
-            patient:patientId
+            patient: patientId
         });
         let patient;
+
         try {
             patient = await Patient.findById(patientId);
         } catch (err) {
+            console.log(err);
             return next(new HttpError('Creating blood tests  failed.', 500));
         }
         if (!patient) {
@@ -45,7 +69,7 @@ const createLabTest=async(req,res,next)=>{
             const sess = await mongoose.startSession();
             sess.startTransaction();
             await createdBlood.save({ session: sess });
-            patient.blood=createdBlood;
+            patient.blood.push(createdBlood);
             await patient.save({ session: sess });
             await sess.commitTransaction();
         } catch (err) {
@@ -56,16 +80,16 @@ const createLabTest=async(req,res,next)=>{
             );
             return next(error);
         }
-    
-        res.status(201).json({ blood: createdBlood})
 
-    }else if(type==='Thyro'){
-        const { tsh,t4,ft4,t3,ft3,abtpo,trab,ct,tg } = req.body;
+        res.status(201).json({ blood: createdBlood })
+
+    } else if (type === 'Thyro') {
+        const { tsh, t4, ft4, t3, ft3, abtpo, trab, ct, tg } = req.body;
         const createdThyro = new Thyro({
             date,
             visitDate,
-            tsh,t4,ft4,ft3,t3,abtpo,trab,ct,tg,
-            patient:patientId
+            tsh, t4, ft4, ft3, t3, abtpo, trab, ct, tg,
+            patient: patientId
         });
         let patient;
         try {
@@ -80,7 +104,7 @@ const createLabTest=async(req,res,next)=>{
             const sess = await mongoose.startSession();
             sess.startTransaction();
             await createdThyro.save({ session: sess });
-            patient.thyro=createdBlood;
+            patient.thyro.push(createdThyro);
             await patient.save({ session: sess });
             await sess.commitTransaction();
         } catch (err) {
@@ -91,16 +115,16 @@ const createLabTest=async(req,res,next)=>{
             );
             return next(error);
         }
-    
-        res.status(201).json({ thyro: createdThyro})
 
-    }else if(type==='parathyro'){
-        const { pth,vitd,ca,p,alvoumini,kreatanini } = req.body;
+        res.status(201).json({ thyro: createdThyro })
+
+    } else if (type === 'parathyro') {
+        const { pth, vitd, ca, p, alvoumini, kreatanini } = req.body;
         const createdParathyro = new Parathyro({
             date,
             visitDate,
-            pth,vitd,ca,p,alvoumini,kreatanini,
-            patient:patientId
+            pth, vitd, ca, p, alvoumini, kreatanini,
+            patient: patientId
         });
         let patient;
         try {
@@ -115,7 +139,7 @@ const createLabTest=async(req,res,next)=>{
             const sess = await mongoose.startSession();
             sess.startTransaction();
             await createdParathyro.save({ session: sess });
-            patient.parathyro=createdParathyro;
+            patient.parathyro.push(createdParathyro);
             await patient.save({ session: sess });
             await sess.commitTransaction();
         } catch (err) {
@@ -126,11 +150,95 @@ const createLabTest=async(req,res,next)=>{
             );
             return next(error);
         }
-    
-        res.status(201).json({ parathyro: createdParathyro})
+
+        res.status(201).json({ parathyro: createdParathyro })
+    }
+}
+const updateLabTest = async (req, res, next) => {
+    const labtId = req.params.labId;
+    const [type, date, visitDate] = [req.body.type, req.body.date, req.body.visitDate];
+    let labTest;
+    if (type === 'blood') {
+        const { kallio, natrio, asbestio, ht, mcv, sgot, b12, hb } = req.body;
+        try {
+            labTest = await Blood.findById(labtId);
+        } catch (err) {
+            const error = new HttpError('Something went wrong,could not update blood test', 500);
+            return next(error);
+        }
+        labTest.date = date;
+        labTest.visitDate = visitDate;
+        labTest.kallio = kallio;
+        labTest.natrio = natrio;
+        labTest.asbestio = asbestio;
+        labTest.sgot = sgot;
+        labTest.ht = ht;
+        labTest.mcv = mcv;
+        labTest.b12 = b12;
+        labTest.hb = hb;
+
+
+        try {
+            await labTest.save();
+        } catch (err) {
+            const error = new HttpError('Could not update blood test,please try again.', 500);
+            return next(error);
+        };
+    }
+    else if (type === 'thyro') {
+        const { tsh, t4, ft4, t3, ft3, abtpo, trab, ct, tg } = req.body;
+        try {
+            labTest = await Thyro.findById(labId);
+        } catch (err) {
+            const error = new HttpError('Something went wrong,could not update thyro test', 500);
+            return next(error);
+        }
+        labTest.date = date;
+        labTest.visitDate = visitDate;
+        labTest.tsh = tsh;
+        labTest.t4 = t4;
+        labTest.ft4 = ft4;
+        labTest.ft3 = ft3;
+        labTest.t3 = t3;
+        labTest.abtpo = abtpo;
+        labTest.trab = trab;
+        labTest.ct = ct;
+        labTest.tg = tg;
+        try {
+            await labTest.save();
+        } catch (err) {
+            const error = new HttpError('Could not update thyro test,please try again.', 500);
+            return next(error);
+        };
+    }
+    else if (type === 'parathyro') {
+        const { pth, vitd, ca, p, alvoumini, kreatanini } = req.body;
+        try {
+            labTest = await Thyro.findById(labId);
+        } catch (err) {
+            const error = new HttpError('Something went wrong,could not update parathyro test', 500);
+            return next(error);
+        }
+        labTest.date = date;
+        labTest.visitDate = visitDate;
+        labTest.pth = pth;
+        labTest.vitd = vitd;
+        labTest.ca = ca;
+        labTest.p = p;
+        labTest.alvoumini = alvoumini;
+        labTest.kreatanini = kreatanini;
+        try {
+            await labTest.save();
+        } catch (err) {
+            const error = new HttpError('Could not update parathyro test,please try again.', 500);
+            return next(error);
+        };
     }
 
-   
+    res.status(200).json(labTest);
 }
 
-exports.createLabTest=createLabTest;
+
+exports.updateLabTest = updateLabTest;
+exports.getLabTests = getLabTests;
+exports.createLabTest = createLabTest;

@@ -6,6 +6,8 @@ const visitControllers=require('../controllers/visits-controller');
 const basicsControllers=require('../controllers/basics-controller');
 const anaminstikoControllers=require('../controllers/anamnistiko-controller');
 const labTestControllers=require('../controllers/labTests-controller');
+const bloodLabTestControllers=require('../controllers/bloodTest-controller');
+const parathyroLabTestControllers=require('../controllers/parathyro-controller');
 const checkAuth=require('../middleware/check-auth');
 
 const router =express.Router();
@@ -40,6 +42,18 @@ router.patch('/:pid/visits/:vid',visitControllers.updateVisit);
 router.delete('/:pid/visits/:vid',visitControllers.deleteVisit);
 
 router.post('/:pid/visits',visitControllers.createVisit);
+
+router.get('/:pid/lab_tests',labTestControllers.getLabTests);
+
+router.delete('/:pid/lab_tests/blood/:labId',bloodLabTestControllers.deleteBloodLabTest);
+
+router.delete('/:pid/lab_tests/parathyro/:labId',parathyroLabTestControllers.deleteParathyroLabTest);
+
+router.get('/:pid/lab_tests/blood/:labId',bloodLabTestControllers.getBloodTests);
+
+router.get('/:pid/lab_tests/parathyro/:labId',parathyroLabTestControllers.getParathyrodTests);
+
+router.patch('/:pid/lab_tests/:labId',labTestControllers.updateLabTest);
 
 router.post('/:pid/lab_tests',labTestControllers.createLabTest);
 

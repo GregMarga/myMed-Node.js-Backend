@@ -50,8 +50,9 @@ const signup = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Signing up failed,please try again.', 500));
     }
+    console.log(createdUser.id)
 
-    res.status(201).json({ user: createdUser.id, email: createdUser.email, token: token });
+    res.status(201).json({ userId: createdUser.id, email: createdUser.email, token: token });
 };
 
 const login = async (req, res, next) => {
@@ -86,7 +87,6 @@ const login = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Logging in failed,please try again.', 500));
     }
-
 
     res.json({userId:existingUser.id,email:existingUser.email,token:token });
 };

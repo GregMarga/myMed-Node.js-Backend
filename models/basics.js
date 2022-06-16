@@ -11,6 +11,7 @@ const basicsSchema = Schema({
     address: { type: String, required: false },
     area: { type: String, required: false },
     postalCode:{type:String,required:false},
+    email:{type:String,required:false},
     patient:{type:mongoose.Types.ObjectId,required:true,ref:'Patient'}
 })
 

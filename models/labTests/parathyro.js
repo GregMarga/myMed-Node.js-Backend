@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const parathyroSchema = Schema({
-    date: { type: String, required: false },
-    visitDate: { type: String, required: false },
+    date: { type: Date, required: true },
+    visitDate: { type: Date, required: false },
     pth:{ type: String, required: false },
     vitd:{ type: String, required: false },
     ca:{ type: String, required: false },

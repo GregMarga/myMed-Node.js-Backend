@@ -12,9 +12,9 @@ const patientSchema= new Schema({
     doctor:{type:mongoose.Types.ObjectId,required:true,ref:'User'},
     basic:{type:mongoose.Types.ObjectId,ref:'Basic'},
     anamnistiko:{type:mongoose.Types.ObjectId,ref:'Anamnistiko'},
-    blood:{type:mongoose.Types.ObjectId,ref:'Anamnistiko'},
-    thyro:{type:mongoose.Types.ObjectId,ref:'Thyro'},
-    parathyro:{type:mongoose.Types.ObjectId,ref:'Parathyro'},
+    blood:[{type:mongoose.Types.ObjectId,ref:'Anamnistiko'}],
+    thyro:[{type:mongoose.Types.ObjectId,ref:'Thyro'}],
+    parathyro:[{type:mongoose.Types.ObjectId,ref:'Parathyro'}],
     // files:[{type:mongoose.Types.ObjectId,ref:'Visit'}],
     // lab_tests:[{type:mongoose.Types.ObjectId,ref:'Visit'}],
     visits:[{type:mongoose.Types.ObjectId,required:true,ref:'Visit'}]

@@ -15,7 +15,7 @@ const getBasics=async (req,res,next)=>{
 };
 const createBasics=async(req,res,next)=>{
     const patientId=req.params.pid;
-    const { dateOfBirth, placeOfBirth, job, familyStatus, gender, address,area,postalCode } = req.body;
+    const { dateOfBirth, placeOfBirth, job, familyStatus, gender, address,area,postalCode,email } = req.body;
     const createdBasics = new Basics({
         dateOfBirth,
         placeOfBirth,
@@ -25,6 +25,7 @@ const createBasics=async(req,res,next)=>{
         address,
         area,
         postalCode,
+        email,
         patient:patientId
     });
     let patient;

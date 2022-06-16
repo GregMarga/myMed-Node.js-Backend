@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ThyroSchema = Schema({
-    date: { type: String, required: false },
-    visitDate: { type: String, required: false },
+    date: { type: Date, required: true },
+    visitDate: { type: Date, required: false },
     tsh:{ type: String, required: false },
     t4:{ type: String, required: false },
     ft4:{ type: String, required: false },
