@@ -7,8 +7,9 @@ const User = require('../models/user');
 
 const getAllpatients = async (req, res, next) => {
     let patients;
+    const userId=req.params.userId;
     try {
-        patients = await Patient.find({});
+        patients = await Patient.find({'doctor':userId});
     } catch (err) {
         return next(new HttpError('Fetching patients failed,please try again later.', 500));
     }

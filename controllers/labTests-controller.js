@@ -155,13 +155,13 @@ const createLabTest = async (req, res, next) => {
     }
 }
 const updateLabTest = async (req, res, next) => {
-    const labtId = req.params.labId;
+    const labId = req.params.labId;
     const [type, date, visitDate] = [req.body.type, req.body.date, req.body.visitDate];
     let labTest;
     if (type === 'blood') {
         const { kallio, natrio, asbestio, ht, mcv, sgot, b12, hb } = req.body;
         try {
-            labTest = await Blood.findById(labtId);
+            labTest = await Blood.findById(labId);
         } catch (err) {
             const error = new HttpError('Something went wrong,could not update blood test', 500);
             return next(error);
@@ -214,8 +214,9 @@ const updateLabTest = async (req, res, next) => {
     else if (type === 'parathyro') {
         const { pth, vitd, ca, p, alvoumini, kreatanini } = req.body;
         try {
-            labTest = await Thyro.findById(labId);
+            labTest = await Parathyro.findById(labId);
         } catch (err) {
+            console.log(err)
             const error = new HttpError('Something went wrong,could not update parathyro test', 500);
             return next(error);
         }

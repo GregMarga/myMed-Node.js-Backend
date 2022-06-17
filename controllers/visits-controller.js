@@ -14,6 +14,19 @@ const getPatientVisit=async (req,res,next)=>{
     }
     res.json(visits)
 }
+const getPatientVisitDates=async (req,res,next)=>{
+    const userId=req.params.pid;
+    let visitDates;
+    console.log(userId)
+    try{
+        visitDates=await Visit.find({patient:userId}).select('date').sort({ field: 'asc', _id: -1 });
+    }catch(err){
+        console.log(err)
+        return next(new HttpError('Fetching visit dates failed,please try again later.',500));
+    }
+    console.log(visitDates)
+    res.json(visitDates)
+}
 const getPatientVisitById=async (req,res,next)=>{
     const visitId=req.params.vid;
     let visit;
@@ -142,4 +155,5 @@ exports.deleteVisit=deleteVisit;
 exports.updateVisit=updateVisit;
 exports.getPatientVisitById=getPatientVisitById;
 exports.getPatientVisit=getPatientVisit;
+exports.getPatientVisitDates=getPatientVisitDates;
 exports.createVisit=createVisit;

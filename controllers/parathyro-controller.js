@@ -20,8 +20,7 @@ const deleteParathyroLabTest = async (req, res, next) => {
         await lab_test.patient.save({session:sess});
         await sess.commitTransaction();
     } catch (err) {
-        console.log(err)
-        return next(new HttpError('Could not delete visit, please try again later.', 500));
+        return next(new HttpError('Could not delete parathyro test, please try again later.', 500));
     }
     res.json(lab_test);
 };
