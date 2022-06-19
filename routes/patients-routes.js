@@ -16,6 +16,8 @@ router.use(checkAuth);
 
 router.get('/getPatients/:userId', patientControllers.getAllpatients);
 
+router.post('/getPatients/:userId/test', patientControllers.searchPatients);
+
 router.post('/', patientControllers.createPatient);
 
 router.get('/:pid', patientControllers.findPatientById);

@@ -16,6 +16,27 @@ const getAllpatients = async (req, res, next) => {
     res.json(patients)
     // console.log(res.statusCode);
 };
+const searchPatients = async (req, res, next) => {
+    let patients;
+    const {name,sirname,fathersName,tel,amka}=req.body;
+    const userId=req.params.userId;
+    try {
+        patients = await Patient.find({
+            'doctor':userId,
+            'name':{$regex:`${name}`, '$options' : 'xi'},
+            'sirname':{$regex:`${sirname}`, '$options' : 'xi'},
+            'fathersName':{$regex:`${fathersName}`, '$options' : 'xi'},
+            // 'age':{$regex:'', '$options' : 'xi'},
+            'tel':{$regex:`${tel}`, '$options' : 'xi'},
+            'amka':{$regex:`${amka}`, '$options' : 'xi'},
+        });
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Fetching patients failed,please try again later.', 500));
+    }
+    res.json(patients)
+    // console.log(res.statusCode);
+};
 
 const findPatientById = async (req, res, next) => {
     const patientId = req.params.pid;
@@ -138,7 +159,9 @@ const createPatient = async (req, res, next) => {
 
 };
 
+
 exports.getAllpatients = getAllpatients;
+exports.searchPatients=searchPatients;
 exports.findPatientById = findPatientById;
 exports.updatePatient = updatePatient;
 exports.deletePatient = deletePatient;
