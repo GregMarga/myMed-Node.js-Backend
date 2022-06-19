@@ -8,9 +8,19 @@ const User = require('../models/user');
 const getAllpatients = async (req, res, next) => {
     let patients;
     const userId=req.params.userId;
+    const q=req.query;
     try {
-        patients = await Patient.find({'doctor':userId});
+        patients = await Patient.find({
+            'doctor':userId,
+            'name':{$regex:`^${q.name}`, '$options' : 'xi'},
+            'sirname':{$regex:`^${q.sirname}`, '$options' : 'xi'},
+            'fathersName':{$regex:`^${q.fathersName}`, '$options' : 'xi'},
+            // 'age':{$regex:'', '$options' : 'xi'},
+            'tel':{$regex:`${q.tel}`, '$options' : 'xi'},
+            'amka':{$regex:`${q.amka}`, '$options' : 'xi'},
+        });
     } catch (err) {
+        console.log(err)
         return next(new HttpError('Fetching patients failed,please try again later.', 500));
     }
     res.json(patients)

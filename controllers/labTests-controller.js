@@ -7,6 +7,8 @@ const Patient = require('../models/patient');
 
 const getLabTests = async (req, res, next) => {
     const userId = req.params.pid;
+    const q=req.query;
+    console.log(q)
     let lab_tests = [];
     try {
         blood_tests = await Blood.find({ patient: userId });
