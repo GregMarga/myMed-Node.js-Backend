@@ -8,15 +8,19 @@ const Patient = require('../models/patient');
 const getLabTests = async (req, res, next) => {
     const userId = req.params.pid;
     const q=req.query;
-    console.log(q)
     let lab_tests = [];
     try {
-        blood_tests = await Blood.find({ patient: userId });
+        if ((q.date==='null')){
+            blood_tests=await Blood.find({ patient: userId })
+        }else{
+            blood_tests= await Blood.find({ patient: userId,date:q.date })
+        }
         blood_tests.map((test) => {
             test = { ...test, type: 'blood' }
             lab_tests.push(test)
         });
     } catch (err) {
+        console.log(err)
         return next(new HttpError('Fetching lab test info failed,please try again later.', 500));
     }
     try {
