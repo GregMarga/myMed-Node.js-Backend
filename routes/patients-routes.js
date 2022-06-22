@@ -1,5 +1,5 @@
 const express = require('express');
-const { route } = require('express/lib/application');
+
 
 const patientControllers = require('../controllers/patients-controller');
 const visitControllers = require('../controllers/visits-controller');
@@ -9,8 +9,12 @@ const labTestControllers = require('../controllers/labTests-controller');
 const bloodLabTestControllers = require('../controllers/bloodTest-controller');
 const parathyroLabTestControllers = require('../controllers/parathyro-controller');
 const checkAuth = require('../middleware/check-auth');
+const fileUpload=require('../middleware/file-upload');
+const fileController=require('../controllers/file-controller');
 
 const router = express.Router();
+
+router.post('/:pid/files',fileUpload.single('image'),fileController.saveFile);
 
 router.use(checkAuth);
 
@@ -59,5 +63,9 @@ router.get('/:pid/lab_tests/parathyro/:labId', parathyroLabTestControllers.getPa
 router.patch('/:pid/lab_tests/:labId', labTestControllers.updateLabTest);
 
 router.post('/:pid/lab_tests', labTestControllers.createLabTest);
+
+router.get('/:pid/files',fileController.getFiles);
+
+
 
 module.exports = router;

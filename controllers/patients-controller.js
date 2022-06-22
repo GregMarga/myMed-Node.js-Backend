@@ -135,7 +135,7 @@ const createPatient = async (req, res, next) => {
         doctor: uid,
         basic: null,
         anamnistiko: null,
-        // files:[],
+        files:[],
         // lab_tests:[],
         visits: []
     });
