@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const parathyroSchema = Schema({
     date: { type: Date, required: true },
     visitDate: { type: Date, required: false },
+    visitId: { type: String, required: false },
     pth:{ type: String, required: false },
     vitd:{ type: String, required: false },
     ca:{ type: String, required: false },

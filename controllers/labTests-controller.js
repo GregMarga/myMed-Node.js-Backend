@@ -7,13 +7,14 @@ const Patient = require('../models/patient');
 
 const getLabTests = async (req, res, next) => {
     const userId = req.params.pid;
-    const q=req.query;
+    const visitId = req.query.visitId;
+
     let lab_tests = [];
     try {
-        if ((q.date==='null')){
-            blood_tests=await Blood.find({ patient: userId })
-        }else{
-            blood_tests= await Blood.find({ patient: userId,date:q.date })
+        if ((visitId === 'null')) {
+            blood_tests = await Blood.find({ patient: userId })
+        } else {
+            blood_tests = await Blood.find({ patient: userId, visitId: visitId })
         }
         blood_tests.map((test) => {
             test = { ...test, type: 'blood' }
@@ -24,7 +25,11 @@ const getLabTests = async (req, res, next) => {
         return next(new HttpError('Fetching lab test info failed,please try again later.', 500));
     }
     try {
-        parathyro_tests = await Parathyro.find({ patient: userId });
+        if ((visitId === 'null')) {
+            parathyro_tests = await Parathyro.find({ patient: userId });
+        } else {
+            parathyro_tests = await Parathyro.find({ patient: userId, visitId: visitId })
+        }
         parathyro_tests.map((test) => {
             test = { ...test, type: 'parathyro' }
             lab_tests.push(test)
@@ -33,7 +38,11 @@ const getLabTests = async (req, res, next) => {
         return next(new HttpError('Fetching lab test info failed,please try again later.', 500));
     }
     try {
-        thyro_tests = await Thyro.find({ patient: userId });
+        if ((visitId === 'null')) {
+            thyro_tests = await Thyro.find({ patient: userId });
+        } else {
+            thyro_tests = await Thyro.find({ patient: userId, visitId: visitId })
+        }
         thyro_tests.map((test) => {
             test = { ...test, type: 'thyro' }
             lab_tests.push(test)
@@ -44,13 +53,14 @@ const getLabTests = async (req, res, next) => {
     res.json(lab_tests);
 };
 const createLabTest = async (req, res, next) => {
+    console.log(req.body)
     const patientId = req.params.pid;
-    const [type, date, visitDate] = [req.body.type, req.body.date, req.body.visitDate];
+    const [type, date, visitId] = [req.body.type, req.body.date, req.body.visitId];
     if (type === 'blood') {
         const { kallio, natrio, asbestio, ht, mcv, sgot, b12, hb } = req.body;
         const createdBlood = new Blood({
             date,
-            visitDate,
+            visitId,
             kallio,
             natrio,
             asbestio,
@@ -93,7 +103,7 @@ const createLabTest = async (req, res, next) => {
         const { tsh, t4, ft4, t3, ft3, abtpo, trab, ct, tg } = req.body;
         const createdThyro = new Thyro({
             date,
-            visitDate,
+            visitId,
             tsh, t4, ft4, ft3, t3, abtpo, trab, ct, tg,
             patient: patientId
         });
@@ -128,7 +138,7 @@ const createLabTest = async (req, res, next) => {
         const { pth, vitd, ca, p, alvoumini, kreatanini } = req.body;
         const createdParathyro = new Parathyro({
             date,
-            visitDate,
+            visitId,
             pth, vitd, ca, p, alvoumini, kreatanini,
             patient: patientId
         });
@@ -162,7 +172,7 @@ const createLabTest = async (req, res, next) => {
 }
 const updateLabTest = async (req, res, next) => {
     const labId = req.params.labId;
-    const [type, date, visitDate] = [req.body.type, req.body.date, req.body.visitDate];
+    const [type, date, visitId] = [req.body.type, req.body.date, req.body.visitId];
     let labTest;
     if (type === 'blood') {
         const { kallio, natrio, asbestio, ht, mcv, sgot, b12, hb } = req.body;
@@ -173,7 +183,7 @@ const updateLabTest = async (req, res, next) => {
             return next(error);
         }
         labTest.date = date;
-        labTest.visitDate = visitDate;
+        labTest.visitId = visitId;
         labTest.kallio = kallio;
         labTest.natrio = natrio;
         labTest.asbestio = asbestio;
@@ -200,7 +210,7 @@ const updateLabTest = async (req, res, next) => {
             return next(error);
         }
         labTest.date = date;
-        labTest.visitDate = visitDate;
+        labTest.visitId = visitId;
         labTest.tsh = tsh;
         labTest.t4 = t4;
         labTest.ft4 = ft4;
@@ -227,7 +237,7 @@ const updateLabTest = async (req, res, next) => {
             return next(error);
         }
         labTest.date = date;
-        labTest.visitDate = visitDate;
+        labTest.visitId = visitId;
         labTest.pth = pth;
         labTest.vitd = vitd;
         labTest.ca = ca;

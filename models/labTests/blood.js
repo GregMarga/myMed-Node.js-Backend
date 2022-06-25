@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const bloodSchema = Schema({
     date: { type: Date, required: true },
     visitDate: { type: Date, required: false },
+    visitId: { type: String, required: false },
     kallio: { type: String, required: false },
     natrio: { type: String, required: false },
     asbestio: { type: String, required: false },

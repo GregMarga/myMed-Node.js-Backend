@@ -17,14 +17,12 @@ const getPatientVisit=async (req,res,next)=>{
 const getPatientVisitDates=async (req,res,next)=>{
     const userId=req.params.pid;
     let visitDates;
-    console.log(userId)
     try{
         visitDates=await Visit.find({patient:userId}).select('date').sort({ field: 'asc', _id: -1 });
     }catch(err){
         console.log(err)
         return next(new HttpError('Fetching visit dates failed,please try again later.',500));
     }
-    console.log(visitDates)
     res.json(visitDates)
 }
 const getPatientVisitById=async (req,res,next)=>{
@@ -41,9 +39,11 @@ const getPatientVisitById=async (req,res,next)=>{
 
 const createVisit = async (req, res, next) => {
     const patientId=req.params.pid;
-    const { date, diagnosis,geniki_eikona,piesi,weight,height,sfiksis,tekt,smkt,test_volume,others,uid} = req.body;
+    const { id,date, diagnosis,geniki_eikona,piesi,weight,height,sfiksis,tekt,smkt,test_volume,others,uid} = req.body;
+    console.log(id)
 
     const createdVisit = new Visit({
+        _id:id,
         date,
         diagnosis,
         geniki_eikona,
@@ -150,6 +150,10 @@ const deleteVisit = async (req, res, next) => {
     }
     res.json(visit);
 };
+const createVisitId=async(req,res,next)=>{
+    const visitId=mongoose.Types.ObjectId();
+    res.json(visitId)
+}
 
 exports.deleteVisit=deleteVisit;
 exports.updateVisit=updateVisit;
@@ -157,3 +161,4 @@ exports.getPatientVisitById=getPatientVisitById;
 exports.getPatientVisit=getPatientVisit;
 exports.getPatientVisitDates=getPatientVisitDates;
 exports.createVisit=createVisit;
+exports.createVisitId=createVisitId;
