@@ -17,7 +17,8 @@ const patientSchema= new Schema({
     parathyro:[{type:mongoose.Types.ObjectId,ref:'Parathyro'}],
     files:[{type:String,required:false}],
     // lab_tests:[{type:mongoose.Types.ObjectId,ref:'Visit'}],
-    visits:[{type:mongoose.Types.ObjectId,required:true,ref:'Visit'}]
+    visits:[{type:mongoose.Types.ObjectId,required:true,ref:'Visit'}],
+    
 })
 
 module.exports=mongoose.model('Patient',patientSchema);

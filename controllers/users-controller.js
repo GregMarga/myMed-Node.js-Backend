@@ -29,7 +29,8 @@ const signup = async (req, res, next) => {
         email,
         password: hashedPassword,
         patients: [],
-        visits: []
+        visits: [],
+        appointments:[]
     });
 
     try {
