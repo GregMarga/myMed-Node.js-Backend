@@ -7,38 +7,38 @@ const User = require('../models/user');
 
 const getAllpatients = async (req, res, next) => {
     let patients;
-    const userId=req.params.userId;
-    const q=req.query;
+    const userId = req.params.userId;
+    const q = req.query;
+    console.log(q)
     try {
         patients = await Patient.find({
-            'doctor':userId,
-            'name':{$regex:`^${q.name}`, '$options' : 'xi'},
-            'sirname':{$regex:`^${q.sirname}`, '$options' : 'xi'},
-            'fathersName':{$regex:`^${q.fathersName}`, '$options' : 'xi'},
+            'doctor': userId,
+            'name': { $regex: `^${q.name}`, '$options': 'xi' },
+            'sirname': { $regex: `^${q.sirname}`, '$options': 'xi' },
+            'diagnosis': { $regex: `^${q.diagnosis}`, '$options': 'xi' },
             // 'age':{$regex:'', '$options' : 'xi'},
-            'tel':{$regex:`${q.tel}`, '$options' : 'xi'},
-            'amka':{$regex:`${q.amka}`, '$options' : 'xi'},
+            'tel': { $regex: `${q.tel}`, '$options': 'xi' },
+            'amka': { $regex: `${q.amka}`, '$options': 'xi' },
         });
     } catch (err) {
         console.log(err)
         return next(new HttpError('Fetching patients failed,please try again later.', 500));
     }
     res.json(patients)
-    // console.log(res.statusCode);
+
 };
 const searchPatients = async (req, res, next) => {
     let patients;
-    const {name,sirname,fathersName,tel,amka}=req.body;
-    const userId=req.params.userId;
+    const { name, sirname, tel, amka } = req.body;
+    const userId = req.params.userId;
     try {
         patients = await Patient.find({
-            'doctor':userId,
-            'name':{$regex:`${name}`, '$options' : 'xi'},
-            'sirname':{$regex:`${sirname}`, '$options' : 'xi'},
-            'fathersName':{$regex:`${fathersName}`, '$options' : 'xi'},
+            'doctor': userId,
+            'name': { $regex: `${name}`, '$options': 'xi' },
+            'sirname': { $regex: `${sirname}`, '$options': 'xi' },
             // 'age':{$regex:'', '$options' : 'xi'},
-            'tel':{$regex:`${tel}`, '$options' : 'xi'},
-            'amka':{$regex:`${amka}`, '$options' : 'xi'},
+            'tel': { $regex: `${tel}`, '$options': 'xi' },
+            'amka': { $regex: `${amka}`, '$options': 'xi' },
         });
     } catch (err) {
         console.log(err)
@@ -66,7 +66,7 @@ const findPatientById = async (req, res, next) => {
 
 const updatePatient = async (req, res, next) => {
     const patientId = req.params.pid;
-    const { sirname, name, fathersName, age, tel, amka } = req.body;
+    const { sirname, name, diagnosis, age, tel, amka } = req.body;
     let patient;
     try {
         patient = await Patient.findById(patientId);
@@ -82,7 +82,6 @@ const updatePatient = async (req, res, next) => {
     patient.name = name;
     patient.sirname = sirname;
     patient.age = age;
-    patient.fathersName = fathersName;
     patient.tel = tel;
     patient.amka = amka;
     try {
@@ -122,21 +121,20 @@ const deletePatient = async (req, res, next) => {
     res.json(patient)
 };
 const createPatient = async (req, res, next) => {
-    const { sirname, name, fathersName, age, tel, amka, uid } = req.body;
+    const { sirname, name, diagnosis, age, tel, amka, uid } = req.body;
     const myId = mongoose.Types.ObjectId();
     const createdPatient = new Patient({
         _id: myId,
         name,
         sirname,
-        fathersName,
+        diagnosis,
         age,
         tel,
         amka,
         doctor: uid,
         basic: null,
         anamnistiko: null,
-        files:[],
-        // lab_tests:[],
+        files: [],
         visits: []
     });
 
@@ -165,13 +163,13 @@ const createPatient = async (req, res, next) => {
         );
         return next(error);
     }
-    res.status(201).json({ _id: myId, name, sirname, fathersName, age, tel, amka });
+    res.status(201).json({ _id: myId, name, sirname, diagnosis, age, tel, amka });
 
 };
 
 
 exports.getAllpatients = getAllpatients;
-exports.searchPatients=searchPatients;
+exports.searchPatients = searchPatients;
 exports.findPatientById = findPatientById;
 exports.updatePatient = updatePatient;
 exports.deletePatient = deletePatient;

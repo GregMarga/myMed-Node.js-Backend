@@ -7,12 +7,13 @@ const basicsSchema = Schema({
     placeOfBirth: { type: String, required: false },
     job: { type: String, required: false },
     familyStatus: { type: String, required: false },
+    fathersName: { type: String, required: false },
     gender: { type: String, required: false },
     address: { type: String, required: false },
     area: { type: String, required: false },
-    postalCode:{type:String,required:false},
-    email:{type:String,required:false},
-    patient:{type:mongoose.Types.ObjectId,required:true,ref:'Patient'}
+    postalCode: { type: String, required: false },
+    email: { type: String, required: false },
+    patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' }
 })
 
 

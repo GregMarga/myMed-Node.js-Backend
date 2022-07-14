@@ -9,12 +9,14 @@ const labTestControllers = require('../controllers/labTests-controller');
 const bloodLabTestControllers = require('../controllers/bloodTest-controller');
 const parathyroLabTestControllers = require('../controllers/parathyro-controller');
 const checkAuth = require('../middleware/check-auth');
-const fileUpload=require('../middleware/file-upload');
-const fileController=require('../controllers/file-controller');
+const fileUpload = require('../middleware/file-upload');
+const fileController = require('../controllers/file-controller');
 
 const router = express.Router();
 
-router.post('/:pid/files',fileUpload.single('image'),fileController.saveFile);
+router.post('/:pid/files', fileUpload.single('image'), fileController.saveFile);
+
+router.patch('/:pid/files/:fileId', fileUpload.single('image'), fileController.updateFile);
 
 router.use(checkAuth);
 
@@ -66,7 +68,9 @@ router.patch('/:pid/lab_tests/:labId', labTestControllers.updateLabTest);
 
 router.post('/:pid/lab_tests', labTestControllers.createLabTest);
 
-router.get('/:pid/files',fileController.getFiles);
+router.get('/:pid/files', fileController.getFiles);
+
+router.delete('/:pid/files/:fileId', fileController.deleteFile);
 
 
 
