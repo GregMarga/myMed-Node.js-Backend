@@ -9,7 +9,6 @@ const getAllpatients = async (req, res, next) => {
     let patients;
     const userId = req.params.userId;
     const q = req.query;
-    console.log(q)
     try {
         patients = await Patient.find({
             'doctor': userId,
@@ -60,13 +59,14 @@ const findPatientById = async (req, res, next) => {
     if (!patient) {
         return next(new HttpError('Could not find a patient for the provided id.', 404));
     }
+    console.log(patient);
     res.json(patient);
 
 };
 
 const updatePatient = async (req, res, next) => {
     const patientId = req.params.pid;
-    const { sirname, name, diagnosis, age, tel, amka } = req.body;
+    const { sirname, name, diagnosis, dateOfBirth, tel, amka } = req.body;
     let patient;
     try {
         patient = await Patient.findById(patientId);
@@ -81,7 +81,7 @@ const updatePatient = async (req, res, next) => {
 
     patient.name = name;
     patient.sirname = sirname;
-    patient.age = age;
+    patient.dateOfBirth = dateOfBirth;
     patient.tel = tel;
     patient.amka = amka;
     try {
@@ -121,14 +121,14 @@ const deletePatient = async (req, res, next) => {
     res.json(patient)
 };
 const createPatient = async (req, res, next) => {
-    const { sirname, name, diagnosis, age, tel, amka, uid } = req.body;
+    const { sirname, name, diagnosis, dateOfBirth, tel, amka, uid } = req.body;
     const myId = mongoose.Types.ObjectId();
     const createdPatient = new Patient({
         _id: myId,
         name,
         sirname,
         diagnosis,
-        age,
+        dateOfBirth,
         tel,
         amka,
         doctor: uid,
@@ -163,7 +163,7 @@ const createPatient = async (req, res, next) => {
         );
         return next(error);
     }
-    res.status(201).json({ _id: myId, name, sirname, diagnosis, age, tel, amka });
+    res.status(201).json({ _id: myId, name, sirname, diagnosis, dateOfBirth, tel, amka });
 
 };
 

@@ -6,7 +6,7 @@ const patientSchema= new Schema({
     name:{type:String,required:true},
     sirname:{type:String,required:true},
     diagnosis:{type:String,required:false},
-    age:{type:Number,required:false},    
+    dateOfBirth:{type:Date,required:false},    
     tel:{type:String,required:true},
     amka:{type:String,required:false},
     doctor:{type:mongoose.Types.ObjectId,required:true,ref:'User'},
