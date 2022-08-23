@@ -1,10 +1,13 @@
 const Patient = require('../models/patient');
 const mongoose = require('mongoose');
+const HttpError = require('../models/http-error');
 const fs = require('fs');
 
 const saveFile = async (req, res, next) => {
     const patientId = req.params.pid;
     let patient;
+    console.log(patientId)
+    console.log(req.file.path)
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {

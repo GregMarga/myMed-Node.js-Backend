@@ -11,6 +11,7 @@ const parathyroLabTestControllers = require('../controllers/parathyro-controller
 const checkAuth = require('../middleware/check-auth');
 const fileUpload = require('../middleware/file-upload');
 const fileController = require('../controllers/file-controller');
+const farmakaController = require('../controllers/farmaka-controller');
 
 const router = express.Router();
 
@@ -39,6 +40,8 @@ router.post('/:pid/basic', basicsControllers.createBasics);
 router.get('/:pid/anamnistiko', anaminstikoControllers.getAnamnstiko);
 
 router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
+
+router.post('/:pid/farmaka', farmakaController.test);
 
 router.get('/:pid/visits', visitControllers.getPatientVisit);
 
