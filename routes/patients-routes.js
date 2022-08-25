@@ -11,7 +11,8 @@ const parathyroLabTestControllers = require('../controllers/parathyro-controller
 const checkAuth = require('../middleware/check-auth');
 const fileUpload = require('../middleware/file-upload');
 const fileController = require('../controllers/file-controller');
-const farmakaController = require('../controllers/farmaka-controller');
+// const farmakaController = require('../controllers/farmaka-controller');
+const farmakoController = require('../controllers/farmako-controller');
 
 const router = express.Router();
 
@@ -41,7 +42,14 @@ router.get('/:pid/anamnistiko', anaminstikoControllers.getAnamnstiko);
 
 router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
 
-router.post('/:pid/farmaka', farmakaController.test);
+
+// router.post('/:pid/farmaka', farmakaController.test);
+
+// router.post('/:pid/farmaka/name', farmakaController.test);
+
+router.get('/:pid/farmako/name/:name',farmakoController.drugNameHits);
+
+router.get('/:pid/farmako/ATC_name/:name',farmakoController.drugATCNameHits);
 
 router.get('/:pid/visits', visitControllers.getPatientVisit);
 

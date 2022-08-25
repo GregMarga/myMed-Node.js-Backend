@@ -6,8 +6,6 @@ const path = require('path');
 
 const HttpError = require('./models/http-error');
 
-require('dotenv').config();
-
 const patientsRouter = require('./routes/patients-routes');
 const userRouter = require('./routes/users-routes');
 const appointmentRouter = require('./routes/appointments-routes');
@@ -50,7 +48,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-    .connect('mongodb+srv://Gregory:01101998@cluster0.rjbiqnx.mongodb.net/?retryWrites=true&w=majority')
+    .connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.rjbiqnx.mongodb.net/?retryWrites=true&w=majority`)
     .then(() => {
         app.listen(5000);
     })
