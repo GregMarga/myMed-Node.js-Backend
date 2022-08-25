@@ -13,6 +13,7 @@ const fileUpload = require('../middleware/file-upload');
 const fileController = require('../controllers/file-controller');
 // const farmakaController = require('../controllers/farmaka-controller');
 const farmakoController = require('../controllers/farmako-controller');
+const conditionsController=require('../controllers/conditions-controller');
 
 const router = express.Router();
 
@@ -50,6 +51,8 @@ router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
 router.get('/:pid/farmako/name/:name',farmakoController.drugNameHits);
 
 router.get('/:pid/farmako/ATC_name/:name',farmakoController.drugATCNameHits);
+
+router.get('/:pid/conditions/name/:name',conditionsController.conditionHits);
 
 router.get('/:pid/visits', visitControllers.getPatientVisit);
 
