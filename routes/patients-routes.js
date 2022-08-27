@@ -10,14 +10,18 @@ const bloodLabTestControllers = require('../controllers/bloodTest-controller');
 const parathyroLabTestControllers = require('../controllers/parathyro-controller');
 const checkAuth = require('../middleware/check-auth');
 const fileUpload = require('../middleware/file-upload');
+const examsUpload=require('../middleware/exams-upload');
+const examsController=require('../controllers/exams-controller');
 const fileController = require('../controllers/file-controller');
-// const farmakaController = require('../controllers/farmaka-controller');
+const farmakaController = require('../controllers/farmaka-controller');
 const farmakoController = require('../controllers/farmako-controller');
-const conditionsController=require('../controllers/conditions-controller');
+const conditionsController = require('../controllers/conditions-controller');
 
 const router = express.Router();
 
 router.post('/:pid/files', fileUpload.single('image'), fileController.saveFile);
+
+router.post('/:pid/uploads/exams', examsUpload.single('exam'), examsController.saveFile);
 
 router.patch('/:pid/files/:fileId', fileUpload.single('image'), fileController.updateFile);
 
@@ -39,20 +43,24 @@ router.get('/:pid/basic', basicsControllers.getBasics);
 
 router.post('/:pid/basic', basicsControllers.createBasics);
 
+router.patch('/:pid/basic', basicsControllers.updateBasics);
+
 router.get('/:pid/anamnistiko', anaminstikoControllers.getAnamnstiko);
 
 router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
 
 
-// router.post('/:pid/farmaka', farmakaController.test);
+router.post('/:pid/farmaka', farmakaController.createFarmako);
+
+router.delete('/:pid/farmaka/:farmakoId', farmakaController.deleteFarmako);
 
 // router.post('/:pid/farmaka/name', farmakaController.test);
 
-router.get('/:pid/farmako/name/:name',farmakoController.drugNameHits);
+router.get('/:pid/farmako/name/:name', farmakoController.drugNameHits);
 
-router.get('/:pid/farmako/ATC_name/:name',farmakoController.drugATCNameHits);
+router.get('/:pid/farmako/ATC_name/:name', farmakoController.drugATCNameHits);
 
-router.get('/:pid/conditions/name/:name',conditionsController.conditionHits);
+router.get('/:pid/conditions/name/:name', conditionsController.conditionHits);
 
 router.get('/:pid/visits', visitControllers.getPatientVisit);
 
@@ -85,6 +93,8 @@ router.post('/:pid/lab_tests', labTestControllers.createLabTest);
 router.get('/:pid/files', fileController.getFiles);
 
 router.delete('/:pid/files/:fileId', fileController.deleteFile);
+
+router.delete('/:pid/uploads/exams/:examId', examsUpload.single('exam'), examsController.deleteExam);
 
 
 

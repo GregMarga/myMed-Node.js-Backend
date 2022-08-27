@@ -22,6 +22,7 @@ app.use((req, res, next) => {
     next();
 })
 app.use('/uploads/images', express.static(path.join('uploads', 'images')));
+app.use('/uploads/exams', express.static(path.join('uploads', 'exams')));
 
 app.use('/users', userRouter)
 app.use('/patients', patientsRouter);

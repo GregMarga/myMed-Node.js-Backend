@@ -73,6 +73,8 @@ const deleteFile = async (req, res, next) => {
 const updateFile = async (req, res, next) => {
     const patientId = req.params.pid;
     const fileId = req.params.fileId;
+    console.log('in',fileId,)
+    console.log(req.file.path);
     let patient;
     try {
         patient = await Patient.findById(patientId);

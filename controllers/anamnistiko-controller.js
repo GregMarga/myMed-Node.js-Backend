@@ -15,24 +15,24 @@ const getAnamnstiko=async (req,res,next)=>{
 };
 const createAnamnistiko=async(req,res,next)=>{
     const patientId=req.params.pid;
-    const { allergies,cleronomical,personal,surgeries,drug_usage,others } = req.body;
+    const { allergies,cleronomical,conditions,surgeries,gynaikologiko } = req.body;
     const createdAnamnistiko = new Anamnistiko({
         allergies,
         cleronomical,
-        personal,
+        conditions,
         surgeries,
-        drug_usage,
-        others,
+        gynaikologiko,
+        
         patient:patientId
     });
     let patient;
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {
-        return next(new HttpError('Creating anamnistiko  failed.', 500));
+        return next(new HttpError('Η δημιουργία του αναμνηστικού απέτυχε.', 500));
     }
     if (!patient) {
-        return next(new HttpError('Could not find a Patient for provided id.', 404));
+        return next(new HttpError('Δεν υπάρχει καταγεγραμμένος ο συγκεκριμένος ασθενής.', 404));
     }
     try {
         const sess = await mongoose.startSession();

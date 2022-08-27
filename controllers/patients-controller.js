@@ -123,12 +123,12 @@ const deletePatient = async (req, res, next) => {
 const createPatient = async (req, res, next) => {
     const { sirname, name, diagnosis, dateOfBirth, tel, amka, uid } = req.body;
     let patient;
-    try{
-        patient = await Patient.findOne({amka:amka});
-    }catch (err){
+    try {
+        patient = await Patient.findOne({ amka: amka });
+    } catch (err) {
         return next(new HttpError('Κάτι πήγε στραβά,παρακαλώ προσπαθήστε ξανά.'));
     }
-    if (patient){
+    if (patient) {
         return next(new HttpError('Υπάρχει ήδη καταχωρημένος αυτός ο ασθενής.'));
     }
     const myId = mongoose.Types.ObjectId();
@@ -144,7 +144,9 @@ const createPatient = async (req, res, next) => {
         basic: null,
         anamnistiko: null,
         files: [],
-        visits: []
+        visits: [],
+        exams: [],
+        farmako:[]
     });
 
     let doctor;

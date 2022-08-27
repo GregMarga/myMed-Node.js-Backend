@@ -5,25 +5,33 @@ const Patient = require('../models/patient');
 const User = require('../models/user');
 
 const getBasics = async (req, res, next) => {
-    const userId = req.params.pid;
-    let basics;
+    const patientId = req.params.pid;
+    let patient;
     try {
-        basics = await Basics.findOne({ patient: userId }).sort({ field: 'asc', _id: -1 });
+        patient = await Patient.findById(patientId);
     } catch (err) {
-        return next(new HttpError('Fetching basics info failed,please try again later.', 500));
+        return next(new HttpError('Κάτι πήγε λάθος,δεν φορτώθηκαν τα στοιχεία του ασθενή.', 500));
     }
-    res.json(basics)
+    res.json(patient)
+    // let basics;
+    // try {
+    //     basics = await Basics.findOne({ patient: userId }).sort({ field: 'asc', _id: -1 });
+    // } catch (err) {
+    //     return next(new HttpError('Fetching basics info failed,please try again later.', 500));
+    // }
+    // res.json(basics)
 };
 const createBasics = async (req, res, next) => {
     const myId = mongoose.Types.ObjectId();
-    const { sirname, name, amka, tel, dateOfBirth, placeOfBirth, job, familyStatus, gender, address, area, postalCode, email, fathersName, uid } = req.body;
+    const { patientId, sirname, name, amka, tel, dateOfBirth, placeOfBirth, job, familyStatus, gender, address, area, postalCode, email, fathersName, uid } = req.body;
     let patient;
+    console.log(patientId)
     try {
         patient = await Patient.findOne({ amka: amka });
     } catch (err) {
         return next(new HttpError('Κάτι πήγε λάθος,παρακαλώ προσπαθήστε ξανά.'));
     }
-    if (patient) {
+    if (patient && (patientId === null)) {
         return next(new HttpError('Υπάρχει ήδη καταχωρημένος αυτός ο ασθενής.'));
     } else {
         const createdBasics = new Patient({
@@ -77,6 +85,43 @@ const createBasics = async (req, res, next) => {
         res.status(201).json({ patient: createdBasics });
     }
 }
+const updateBasics = async (req, res, next) => {
+    const { patientId, sirname, name, amka, tel, dateOfBirth, placeOfBirth, job, familyStatus, gender, address, area, postalCode, email, fathersName, uid } = req.body;
+    let patient;
+    console.log(patientId)
+    try {
+        patient = await Patient.findById(patientId);
+    } catch (err) {
+        return next(new HttpError('Κάτι πήγε λάθος,δεν βρέθηκε αυτός ο ασθενής.'));
+    }
+    patient.sirname = sirname
+    patient.name = name
+    patient.amka = amka
+    patient.tel = tel
+    patient.dateOfBirth = dateOfBirth
+    patient.placeOfBirth = placeOfBirth
+    patient.job = job
+    patient.familyStatus = familyStatus
+    patient.fathersName = fathersName
+    patient.gender = gender
+    patient.address = address
+    patient.area = area
+    patient.postalCode = postalCode
+    patient.email = email
+
+
+    try {
+        await patient.save();
+    } catch (err) {
+        const error = new HttpError('Αποτυχία ενημέρωσης στοιχείων ασθενή,παρακαλώ προσπαθήστε ξανά.', 500);
+        return next(error);
+    };
+
+    res.status(201).json(patient);
+
+}
+
 
 exports.getBasics = getBasics;
 exports.createBasics = createBasics;
+exports.updateBasics = updateBasics;

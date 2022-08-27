@@ -23,6 +23,8 @@ const patientSchema= new Schema({
     thyro:[{type:mongoose.Types.ObjectId,ref:'Thyro'}],
     parathyro:[{type:mongoose.Types.ObjectId,ref:'Parathyro'}],
     files:[{type:String,required:false}],
+    farmako:[{type:mongoose.Types.ObjectId,ref:'Farmako'}],
+    exams:[{type:mongoose.Types.ObjectId,required:false}],
     // lab_tests:[{type:mongoose.Types.ObjectId,ref:'Visit'}],
     visits:[{type:mongoose.Types.ObjectId,required:true,ref:'Visit'}],
     
