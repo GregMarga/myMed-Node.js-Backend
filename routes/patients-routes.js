@@ -45,7 +45,7 @@ router.post('/:pid/basic', basicsControllers.createBasics);
 
 router.patch('/:pid/basic', basicsControllers.updateBasics);
 
-router.get('/:pid/anamnistiko', anaminstikoControllers.getAnamnstiko);
+router.get('/:pid/anamnistiko/:gender', anaminstikoControllers.getAnamnstiko);
 
 router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
 
