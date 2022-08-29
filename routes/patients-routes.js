@@ -62,17 +62,17 @@ router.get('/:pid/farmako/ATC_name/:name', farmakoController.drugATCNameHits);
 
 router.get('/:pid/conditions/name/:name', conditionsController.conditionHits);
 
-router.get('/:pid/visits', visitControllers.getPatientVisit);
+router.get('/:pid/visits', visitControllers.getVisit);
 
-router.get('/:pid/visits.dates', visitControllers.getPatientVisitDates);
+// router.get('/:pid/visits.dates', visitControllers.getPatientVisitDates);
 
-router.get('/:pid/visits/:vid', visitControllers.getPatientVisitById);
+// router.get('/:pid/visits/:vid', visitControllers.getPatientVisitById);
 
-router.get('/visits/createVisitId', visitControllers.createVisitId);
+// router.get('/visits/createVisitId', visitControllers.createVisitId);
 
-router.patch('/:pid/visits/:vid', visitControllers.updateVisit);
+router.patch('/:pid/visits/', visitControllers.updateVisit);
 
-router.delete('/:pid/visits/:vid', visitControllers.deleteVisit);
+// router.delete('/:pid/visits/:vid', visitControllers.deleteVisit);
 
 router.post('/:pid/visits', visitControllers.createVisit);
 
