@@ -173,7 +173,9 @@ const createVisit = async (req, res, next) => {
             allergy: false,
             dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
             dateOfHealing: diagnosisList[i].dateOfHealing,
-            diagnosis: diagnosisId
+            diagnosis: diagnosisId,
+            cleronomical:false,
+            patient:patientId
 
         })
 
@@ -407,7 +409,9 @@ const updateVisit = async (req, res, next) => {
             allergy: false,
             dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
             dateOfHealing: diagnosisList[i].dateOfHealing,
-            diagnosis: diagnosisId
+            diagnosis: diagnosisId,
+            cleronomical:false,
+            patient:patientId
 
         })
 
@@ -475,7 +479,8 @@ const updateVisit = async (req, res, next) => {
         const createdFarmako = new Farmako({
             name: therapeiaList[i].name,
             ATC_name: therapeiaList[i].ATC_name,
-            therapeia: therapeiaId
+            therapeia: therapeiaId,
+            patient:patientId
 
         })
 

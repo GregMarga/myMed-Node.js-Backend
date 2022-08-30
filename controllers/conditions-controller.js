@@ -1,13 +1,10 @@
 const algoliasearch = require('algoliasearch');
 const { response } = require('express');
-const mongoose = require('mongoose');
-const HttpError = require('../models/http-error');
 
 
 const client = algoliasearch(process.env.ALGOLIA_CONDITIONS_APP, process.env.ALGOLIA_CONDITIONS_API_KEY);
 
 const index = client.initIndex("conditions");
-
 
 
 const conditionHits = async (req, res, next) => {

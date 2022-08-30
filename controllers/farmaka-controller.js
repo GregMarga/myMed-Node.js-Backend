@@ -3,10 +3,24 @@ const HttpError = require('../models/http-error');
 const Patient = require('../models/patient');
 const Farmako = require("../models/farmako");
 
-const test = async (req, res, next) => {
-    const { test } = req.body
-    console.log(test)
+
+
+
+
+const getFarmakabyPatientId = async (req, res, next) => {
+    console.log('in',req.params.pid)
+    const patientId = req.params.pid;
+    let farmaka;
+    try {
+        farmaka =await Farmako.find({ patient: patientId })
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Αποτυχία φόρτωσης φαρμακευτικής αγωγής.', 500))
+    }
+    res.json({ farmakaList: farmaka });
 }
+
+
 const createFarmako = async (req, res, next) => {
     const patientId = req.params.pid;
     const { name, ATC_name, dateOfStart, dateOfEnd } = req.body;
@@ -88,6 +102,6 @@ const deleteFarmako = async (req, res, next) => {
 }
 
 
-exports.test = test;
+exports.getFarmakabyPatientId = getFarmakabyPatientId;
 exports.createFarmako = createFarmako;
 exports.deleteFarmako=deleteFarmako;

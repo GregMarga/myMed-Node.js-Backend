@@ -16,6 +16,7 @@ const fileController = require('../controllers/file-controller');
 const farmakaController = require('../controllers/farmaka-controller');
 const farmakoController = require('../controllers/farmako-controller');
 const conditionsController = require('../controllers/conditions-controller');
+const atomikoController=require('../controllers/atomiko-controller');
 
 const router = express.Router();
 
@@ -49,6 +50,9 @@ router.get('/:pid/anamnistiko/:gender', anaminstikoControllers.getAnamnstiko);
 
 router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
 
+router.patch('/:pid/anamnistiko', anaminstikoControllers.updateAnamnistiko);
+
+router.get('/:pid/farmaka', farmakaController.getFarmakabyPatientId);
 
 router.post('/:pid/farmaka', farmakaController.createFarmako);
 
@@ -61,6 +65,10 @@ router.get('/:pid/farmako/name/:name', farmakoController.drugNameHits);
 router.get('/:pid/farmako/ATC_name/:name', farmakoController.drugATCNameHits);
 
 router.get('/:pid/conditions/name/:name', conditionsController.conditionHits);
+
+router.get('/:pid/conditions',atomikoController.getConditionsbyPatientId);
+
+router.get('/:pid/conditions/id',atomikoController.getId);
 
 router.get('/:pid/visits', visitControllers.getVisit);
 
