@@ -44,10 +44,12 @@ const getAnamnstiko = async (req, res, next) => {
     }
     for (let i = 0; i < conditions.length; i++) {
 
-        if (!conditions[i].allergy) {
+        if (!conditions[i].allergy&&!conditions[i].cleronomical) {
             conditionsList.push(conditions[i])
-        } else {
+        } else if(conditions[i].allergy){
             allergies.push(conditions[i])
+        }else if(conditions[i].cleronomical){
+            cleronomicalList.push(conditions[i])
         }
     }
 
@@ -58,20 +60,21 @@ const getAnamnstiko = async (req, res, next) => {
     }
 
 
-    try {
-        cleronomical = await Klironomiko.findOne({ anamnistiko: anamnistiko._id }).sort({ field: 'asc', _id: -1 });
-    } catch (err) {
-        return next(new HttpError('Fetching history info failed,please try again later.', 500));
-    }
-    try {
-        conditions = await Condition.find({ klironomiko: cleronomical._id }).sort({ field: 'asc', _id: -1 });
-    } catch (err) {
-        return next(new HttpError('Fetching history info failed,please try again later.', 500));
-    }
-    for (let i = 0; i < conditions.length; i++) {
-        cleronomical.push(conditions[i])
+    // try {
+    //     cleronomical = await Klironomiko.findOne({ anamnistiko: anamnistiko._id }).sort({ field: 'asc', _id: -1 });
+    // } catch (err) {
+    //     return next(new HttpError('Fetching history info failed,please try again later.', 500));
+    // }
+    // try {
+    //     conditions = await Condition.find({ klironomiko: cleronomical._id }).sort({ field: 'asc', _id: -1 });
+    // } catch (err) {
+    //     return next(new HttpError('Fetching history info failed,please try again later.', 500));
+    // }
+    // for (let i = 0; i < conditions.length; i++) {
+    //     console.log(conditions)
+    //     cleronomicalList.push(conditions[i])
 
-    }
+    // }
 
     // try {
     //     conditions = await Condition.find({ atomiko: atomiko._id }).sort({ field: 'asc', _id: -1 });
@@ -93,7 +96,7 @@ const getAnamnstiko = async (req, res, next) => {
         }
     }
 
-    res.json({ allergies, conditionsList, surgeries, gynaikologiko, maieutiko })
+    res.json({ allergies, conditionsList, surgeries, gynaikologiko, maieutiko,cleronomicalList })
 };
 
 
@@ -202,7 +205,7 @@ const createAnamnistiko = async (req, res, next) => {
 
     for (let i = 0; i < conditions.length; i++) {
         const createdCondition = new Condition({
-            _id: conditions[i].id,
+            _id: conditions[i]._id,
             name: conditions[i].name,
             allergy: false,
             dateOfDiagnosis: conditions[i].dateOfDiagnosis,
@@ -233,8 +236,8 @@ const createAnamnistiko = async (req, res, next) => {
     for (let i = 0; i < allergies.length; i++) {
         console.log(allergies[i])
         const createdCondition = new Condition({
-            _id: allergies[i].id,
-            name: allergies[i],
+            _id: allergies[i]._id,
+            name: allergies[i].name,
             allergy: true,
             patient: patientId,
             atomiko: atomikoId
@@ -270,7 +273,7 @@ const createAnamnistiko = async (req, res, next) => {
 
         const createdCondition = new Condition({
             name: cleronomical[i].name,
-            _id: cleronomical[i].id,
+            _id: cleronomical[i]._id,
             allergy: false,
             patient: patientId,
             atomiko: atomikoId,
@@ -373,7 +376,7 @@ const createAnamnistiko = async (req, res, next) => {
 
 
 
-const deleteOldValues = async (patientId) => {
+const deleteOldValues = async (patientId,next) => {
     let anamnistiko, atomiko, klironomiko;
     let klironomikoId;
     let anamnistikoId;
@@ -395,7 +398,7 @@ const deleteOldValues = async (patientId) => {
     gynaikologikoId = anamnistiko.gynaikologiko;
 
     try {
-        gynaikologika = await Gynaikologiko.findById(gynaikologikoId).deleteOne()
+        await Gynaikologiko.findById(gynaikologikoId).deleteOne()
     } catch (err) {
         console.log(err)
         return next(new HttpError('Η ενημέρωση του αναμνηστικού απέτυχε.', 500));
@@ -403,7 +406,7 @@ const deleteOldValues = async (patientId) => {
 
     for (let i = 0; i < anamnistiko.surgeries.length; i++) {
         try {
-            surgery = await Surgery.findById(anamnistiko.surgeries[i]).deleteOne()
+            await Surgery.findById(anamnistiko.surgeries[i]).deleteOne()
         } catch (err) {
             console.log(err)
             return next(new HttpError('Η ενημέρωση του αναμνηστικού απέτυχε.', 500));
@@ -465,13 +468,13 @@ const deleteOldValues = async (patientId) => {
 const updateAnamnistiko = async (req, res, next) => {
     const patientId = req.params.pid;
     let { allergies, cleronomical, conditions, surgeries, gynaikologiko } = req.body;
-   
+
     console.log(allergies)
-   
-    
+
+
 
     ///find all old values and delete
-    deleteOldValues(patientId);
+    deleteOldValues(patientId,next);
 
 
     //create new values
@@ -574,7 +577,7 @@ const updateAnamnistiko = async (req, res, next) => {
 
     for (let i = 0; i < conditions.length; i++) {
         const createdCondition = new Condition({
-            _id: conditions[i].id,
+            _id: conditions[i]._id,
             name: conditions[i].name,
             allergy: false,
             dateOfDiagnosis: conditions[i].dateOfDiagnosis,
@@ -605,8 +608,8 @@ const updateAnamnistiko = async (req, res, next) => {
     for (let i = 0; i < allergies.length; i++) {
         console.log(allergies[i])
         const createdCondition = new Condition({
-            _id: allergies[i].id,
-            name: allergies[i],
+            _id: allergies[i]._id,
+            name: allergies[i].name,
             allergy: true,
             patient: patientId,
             atomiko: atomikoId
@@ -639,10 +642,10 @@ const updateAnamnistiko = async (req, res, next) => {
         return next(new HttpError('Δεν υπάρχει κληρονομικό αναμνηστικό.', 404));
     }
     for (let i = 0; i < cleronomical.length; i++) {
-        
+
         const createdCondition = new Condition({
             name: cleronomical[i].name,
-            _id: cleronomical[i].id,
+            _id: cleronomical[i]._id,
             allergy: false,
             patient: patientId,
             atomiko: atomikoId,

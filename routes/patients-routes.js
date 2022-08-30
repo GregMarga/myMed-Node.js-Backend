@@ -68,7 +68,13 @@ router.get('/:pid/conditions/name/:name', conditionsController.conditionHits);
 
 router.get('/:pid/conditions',atomikoController.getConditionsbyPatientId);
 
+router.get('/:pid/allergies',atomikoController.getAllergiesbyPatientId);
+
+router.get('/:pid/klironomiko',atomikoController.getKlironomikobyPatientId);
+
 router.get('/:pid/conditions/id',atomikoController.getId);
+
+router.delete('/:pid/conditions/id',atomikoController.deleteConditionsbyId);
 
 router.get('/:pid/visits', visitControllers.getVisit);
 
