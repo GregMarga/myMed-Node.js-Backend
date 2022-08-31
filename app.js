@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
+
 const HttpError = require('./models/http-error');
 
 const patientsRouter = require('./routes/patients-routes');
@@ -12,7 +13,8 @@ const appointmentRouter = require('./routes/appointments-routes');
 
 const app = express();
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
+
 
 
 app.use((req, res, next) => {

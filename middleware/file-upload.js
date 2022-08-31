@@ -8,21 +8,22 @@ const MIME_TYPE_MAP = {   //epitrepta arxeia
 };
 
 const fileUpload = multer({
-    limit: 512000,   //max size of 512kb
+    limit: 10240000,   //max size of 10mb
     storage: multer.diskStorage({
         destination: (req, file, cb) => { 
             cb(null,'uploads/images')
         },
         filename: (req, file, cb) => {
             const extension = MIME_TYPE_MAP[file.mimetype];
+            console.log(file)
             cb(null, uuidv4() + '.' + extension);
         }
     }),
-        fileFilter: (req, file, cb) => {
-            const isValid=!!MIME_TYPE_MAP[file.mimetype];
-            let error=isValid?null:new Error('Invalid mime type!');
-            cb(error,isValid);
-        }
+        // fileFilter: (req, file, cb) => {
+        //     const isValid=!!MIME_TYPE_MAP[file.mimetype];
+        //     let error=isValid?null:new Error('Invalid mime type!');
+        //     cb(error,isValid);
+        // }
 });
 
 module.exports = fileUpload;

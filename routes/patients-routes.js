@@ -1,4 +1,7 @@
 const express = require('express');
+const { body } = require('express-validator');
+
+const validateRequestSchema = require('../middleware/validate-request-schema')
 
 
 const patientControllers = require('../controllers/patients-controller');
@@ -10,13 +13,13 @@ const bloodLabTestControllers = require('../controllers/bloodTest-controller');
 const parathyroLabTestControllers = require('../controllers/parathyro-controller');
 const checkAuth = require('../middleware/check-auth');
 const fileUpload = require('../middleware/file-upload');
-const examsUpload=require('../middleware/exams-upload');
-const examsController=require('../controllers/exams-controller');
+const examsUpload = require('../middleware/exams-upload');
+const examsController = require('../controllers/exams-controller');
 const fileController = require('../controllers/file-controller');
 const farmakaController = require('../controllers/farmaka-controller');
 const farmakoController = require('../controllers/farmako-controller');
 const conditionsController = require('../controllers/conditions-controller');
-const atomikoController=require('../controllers/atomiko-controller');
+const atomikoController = require('../controllers/atomiko-controller');
 
 const router = express.Router();
 
@@ -25,6 +28,17 @@ router.post('/:pid/files', fileUpload.single('image'), fileController.saveFile);
 router.post('/:pid/uploads/exams', examsUpload.single('exam'), examsController.saveFile);
 
 router.patch('/:pid/files/:fileId', fileUpload.single('image'), fileController.updateFile);
+
+router.post('/:pid/basic/image',
+    body('amka').isLength({ min: 11, max: 11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
+    validateRequestSchema, fileUpload.single('image'), basicsControllers.createImageBasics);
+
+router.patch('/:pid/basic/image', fileUpload.single('image'),
+    body('amka').isLength({ min: 11, max: 11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
+    validateRequestSchema,
+    basicsControllers.updateImageBasics);
+
+
 
 router.use(checkAuth);
 
@@ -42,9 +56,15 @@ router.delete('/:pid', patientControllers.deletePatient);
 
 router.get('/:pid/basic', basicsControllers.getBasics);
 
+
 router.post('/:pid/basic', basicsControllers.createBasics);
 
-router.patch('/:pid/basic', basicsControllers.updateBasics);
+
+router.patch('/:pid/basic',
+    body('amka').isLength({ min: 11,max:11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
+    validateRequestSchema,
+    basicsControllers.updateBasics);
+
 
 router.get('/:pid/anamnistiko/:gender', anaminstikoControllers.getAnamnstiko);
 
@@ -66,15 +86,17 @@ router.get('/:pid/farmako/ATC_name/:name', farmakoController.drugATCNameHits);
 
 router.get('/:pid/conditions/name/:name', conditionsController.conditionHits);
 
-router.get('/:pid/conditions',atomikoController.getConditionsbyPatientId);
+router.get('/:pid/conditions', atomikoController.getConditionsbyPatientId);
 
-router.get('/:pid/allergies',atomikoController.getAllergiesbyPatientId);
+router.post('/:pid/conditions', atomikoController.createConditionAtomiko);
 
-router.get('/:pid/klironomiko',atomikoController.getKlironomikobyPatientId);
+router.get('/:pid/allergies', atomikoController.getAllergiesbyPatientId);
 
-router.get('/:pid/conditions/id',atomikoController.getId);
+router.get('/:pid/klironomiko', atomikoController.getKlironomikobyPatientId);
 
-router.delete('/:pid/conditions/id',atomikoController.deleteConditionsbyId);
+router.get('/:pid/conditions/id', atomikoController.getId);
+
+router.delete('/:pid/conditions/:conditionId', atomikoController.deleteConditionsbyId);
 
 router.get('/:pid/visits', visitControllers.getVisit);
 

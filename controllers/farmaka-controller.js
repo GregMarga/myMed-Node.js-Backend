@@ -79,6 +79,7 @@ const deleteFarmako = async (req, res, next) => {
         console.log(err)
         return next(new HttpError('Δεν βρέθηκε η φαρμακευτική αγωγή προς διαγραφή.', 500));
     }
+    console.log(farmako)
     
     try {
     
