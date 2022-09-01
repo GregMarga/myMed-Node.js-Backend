@@ -45,7 +45,7 @@ const getVisit = async (req, res, next) => {
         console.log(err)
         return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
     }
-
+    console.log(diagnosis)
     for (let i = 0; i < diagnosis.length; i++) {
         try {
             condition = await Condition.findOne({ diagnosis: diagnosis[i]._id }).sort({ field: 'asc', _id: -1 });
@@ -53,10 +53,11 @@ const getVisit = async (req, res, next) => {
             console.log(err)
             return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
         }
+        console.log(condition)
         if (!!condition) {
 
             let enhancedDiagnsosis = {
-                _id: condition._id,
+                _id: mongoose.Types.ObjectId(),
                 name: condition.name,
                 dateOfDiagnosis: condition.dateOfDiagnosis,
                 dateOfDiagnosis: condition.dateOfDiagnosis,
@@ -83,7 +84,7 @@ const getVisit = async (req, res, next) => {
         }
         console.log(therapeias[i].posotita)
         let enhancedTherapeia = {
-            _id: therapeias[i]._id,
+            _id: mongoose.Types.ObjectId(),
             condition: therapeias[i].condition,
             posotita: therapeias[i].posotita,
             syxnotita: therapeias[i].syxnotita,
@@ -101,11 +102,12 @@ const getVisit = async (req, res, next) => {
 
 const createVisit = async (req, res, next) => {
     const patientId = req.params.pid;
+    console.log('patient:',patientId)
     const { date, condition, posotita, syxnotita, farmakaList, therapeiaList, diagnosisList, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
     console.log(date, diagnosisList, therapeiaList, geniki_eikona)
     let visit, therapeia, diagnosis;
     let visitId = mongoose.Types.ObjectId();
-    let therapeiaId = mongoose.Types.ObjectId();
+    let therapeiaId= mongoose.Types.ObjectId();
     let diagnosisId = mongoose.Types.ObjectId();
 
 
@@ -153,45 +155,51 @@ const createVisit = async (req, res, next) => {
         return next(error);
     }
 
-    const createdDiagnosis = new Diagnosis({
-        _id: diagnosisId,
-        visit: visitId
-    })
+   
     try {
         visit = await Visit.findById(visitId);
     } catch (err) {
         return next(new HttpError('Creating new Visit failed.', 500));
     }
-    try {
-        const sess = await mongoose.startSession();
-        sess.startTransaction();
-        await createdDiagnosis.save({ session: sess });
-        visit.diagnosis.push(createdDiagnosis);
-        await visit.save({ session: sess });
-        await sess.commitTransaction();
-    } catch (err) {
-        console.log(err)
-        const error = new HttpError(
-            'Creating visit failed, please try again.',
-            500
-        );
-        return next(error);
-    }
-    try {
-        diagnosis = await Diagnosis.findById(diagnosisId);
-    } catch (err) {
-        return next(new HttpError('Creating new Visit failed.', 500));
-    }
+    
 
 
 
     for (let i = 0; i < diagnosisList.length; i++) {
+        const createdDiagnosis = new Diagnosis({
+            _id:diagnosisList[i]._id,
+            visit: visitId
+        })
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdDiagnosis.save({ session: sess });
+            visit.diagnosis.push(createdDiagnosis);
+            await visit.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Creating visit failed, please try again.',
+                500
+            );
+            return next(error);
+        }
+        try {
+            diagnosis = await Diagnosis.findById(diagnosisList[i]._id);
+        } catch (err) {
+            return next(new HttpError('Creating new Visit failed.', 500));
+        }
+
+
+
         const createdCondition = new Condition({
+          
             name: diagnosisList[i].name,
             allergy: false,
             dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
             dateOfHealing: diagnosisList[i].dateOfHealing,
-            diagnosis: diagnosisId,
+            diagnosis: diagnosisList[i]._id,
             cleronomical: false,
             patient: patientId
 
@@ -219,10 +227,10 @@ const createVisit = async (req, res, next) => {
 
 
     for (let i = 0; i < therapeiaList.length; i++) {
-        let therapeiaId = mongoose.Types.ObjectId();
+    //    console.log('therapeia:',therapeiaList[i])
 
         const createdTherapeia = new Therapeia({
-            _id: therapeiaId,
+            _id:therapeiaList[i]._id,
             condition: therapeiaList[i].condition,
             posotita: therapeiaList[i].posotita,
             syxnotita: therapeiaList[i].syxnotita,
@@ -253,7 +261,7 @@ const createVisit = async (req, res, next) => {
         // for (let j = 0; j < therapeiaList[i].farmakaList.length; j++) {
 
         try {
-            therapeia = await Therapeia.findById(therapeiaId);
+            therapeia = await Therapeia.findById(therapeiaList[i]._id);
         } catch (err) {
             return next(new HttpError('Creating new Visit failed.', 500));
         }
@@ -261,7 +269,8 @@ const createVisit = async (req, res, next) => {
         const createdFarmako = new Farmako({
             name: therapeiaList[i].name,
             ATC_name: therapeiaList[i].ATC_name,
-            therapeia: therapeiaId
+            therapeia: therapeiaList[i]._id,
+            patient:patientId
 
         })
 
@@ -303,10 +312,9 @@ const createVisit = async (req, res, next) => {
 const updateVisit = async (req, res, next) => {
     const patientId = req.params.pid;
     const { date, condition, posotita, syxnotita, farmakaList, therapeiaList, diagnosisList, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
-    console.log(date, diagnosisList, therapeiaList, geniki_eikona)
     let visit, therapeia, diagnosis;
     let visitId;
-    let therapeiaId = mongoose.Types.ObjectId();
+    let therapeiaId
     let diagnosisId = mongoose.Types.ObjectId();
 
     try {
@@ -388,46 +396,52 @@ const updateVisit = async (req, res, next) => {
 
 
     ///create new values
-    const createdDiagnosis = new Diagnosis({
-        _id: diagnosisId,
-        visit: visitId
-    })
+
+
+
     try {
         visit = await Visit.findById(visitId);
     } catch (err) {
         return next(new HttpError('Creating new Visit failed.', 500));
-    }
-    console.log('id:', visitId)
-    try {
-        const sess = await mongoose.startSession();
-        sess.startTransaction();
-        await createdDiagnosis.save({ session: sess });
-        visit.diagnosis.push(createdDiagnosis);
-        await visit.save({ session: sess });
-        await sess.commitTransaction();
-    } catch (err) {
-        console.log(err)
-        const error = new HttpError(
-            'Creating visit failed, please try again.',
-            500
-        );
-        return next(error);
-    }
-    try {
-        diagnosis = await Diagnosis.findById(diagnosisId);
-    } catch (err) {
-        return next(new HttpError('Creating new Visit failed.', 500));
-    }
+    } 
 
 
 
     for (let i = 0; i < diagnosisList.length; i++) {
+        const createdDiagnosis = new Diagnosis({
+            _id:diagnosisList[i]._id,
+            visit: visitId
+        })
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdDiagnosis.save({ session: sess });
+            visit.diagnosis.push(createdDiagnosis);
+            await visit.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Creating visit failed, please try again.',
+                500
+            );
+            return next(error);
+        }
+        try {
+            diagnosis = await Diagnosis.findById(diagnosisList[i]._id);
+        } catch (err) {
+            return next(new HttpError('Creating new Visit failed.', 500));
+        }
+
+
+
         const createdCondition = new Condition({
+          
             name: diagnosisList[i].name,
             allergy: false,
             dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
             dateOfHealing: diagnosisList[i].dateOfHealing,
-            diagnosis: diagnosisId,
+            diagnosis: diagnosisList[i]._id,
             cleronomical: false,
             patient: patientId
 
@@ -455,10 +469,10 @@ const updateVisit = async (req, res, next) => {
 
 
     for (let i = 0; i < therapeiaList.length; i++) {
-        let therapeiaId = mongoose.Types.ObjectId();
+        
 
         const createdTherapeia = new Therapeia({
-            _id: therapeiaId,
+            _id:therapeiaList[i]._id,
             condition: therapeiaList[i].condition,
             posotita: therapeiaList[i].posotita,
             syxnotita: therapeiaList[i].syxnotita,
@@ -489,7 +503,7 @@ const updateVisit = async (req, res, next) => {
         // for (let j = 0; j < therapeiaList[i].farmakaList.length; j++) {
 
         try {
-            therapeia = await Therapeia.findById(therapeiaId);
+            therapeia = await Therapeia.findById(therapeiaList[i]._id);
         } catch (err) {
             return next(new HttpError('Creating new Visit failed.', 500));
         }
@@ -497,7 +511,7 @@ const updateVisit = async (req, res, next) => {
         const createdFarmako = new Farmako({
             name: therapeiaList[i].name,
             ATC_name: therapeiaList[i].ATC_name,
-            therapeia: therapeiaId,
+            therapeia: therapeiaList[i]._id,
             patient: patientId
 
         })
