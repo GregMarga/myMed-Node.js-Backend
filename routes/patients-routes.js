@@ -98,7 +98,9 @@ router.get('/:pid/conditions/id', atomikoController.getId);
 
 router.delete('/:pid/conditions/:conditionId', atomikoController.deleteConditionsbyId);
 
-router.get('/:pid/visits', visitControllers.getVisit);
+router.get('/:pid/visits/:visitId', visitControllers.getVisit);
+
+router.get('/:pid/visits', visitControllers.getAllVisits);
 
 // router.get('/:pid/visits.dates', visitControllers.getPatientVisitDates);
 

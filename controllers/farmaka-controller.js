@@ -8,7 +8,6 @@ const Farmako = require("../models/farmako");
 
 
 const getFarmakabyPatientId = async (req, res, next) => {
-    console.log('in',req.params.pid)
     const patientId = req.params.pid;
     let farmaka;
     try {
@@ -71,15 +70,14 @@ const deleteFarmako = async (req, res, next) => {
     const farmakoId = req.params.farmakoId;
    
     let farmako;
-    console.log('delete')
-    console.log(farmakoId)
+    
     try {
         farmako = await Farmako.findById(farmakoId).populate('patient');
     } catch (err) {
         console.log(err)
         return next(new HttpError('Δεν βρέθηκε η φαρμακευτική αγωγή προς διαγραφή.', 500));
     }
-    console.log(farmako)
+    
     
     try {
     

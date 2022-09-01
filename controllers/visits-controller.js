@@ -8,13 +8,28 @@ const Condition = require('../models/condition');
 const Therapeia = require('../models/therapeia');
 
 
-
+const getAllVisits = async (req, res, next) => {
+    const patientId = req.params.pid;
+    let visits;
+    try {
+        visits = await Visit.find({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
+    }
+    res.status(201).json({ visitList: visits })
+}
 
 const getVisit = async (req, res, next) => {
     const patientId = req.params.pid;
+    const visitId = req.params.visitId
     let visit, condition, diagnosis, diagnosisList = [], therapeias, farmako, therapeiaList = [];
     try {
-        visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+        if (visitId === 'new') {                        /// an einai kainouria episkepsi fortwse ta dedomena tis pio prosfatis
+            visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+        } else {
+            visit = await Visit.findById(visitId);
+        }
     } catch (err) {
         console.log(err)
         return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
@@ -30,6 +45,7 @@ const getVisit = async (req, res, next) => {
         console.log(err)
         return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
     }
+
     for (let i = 0; i < diagnosis.length; i++) {
         try {
             condition = await Condition.findOne({ diagnosis: diagnosis[i]._id }).sort({ field: 'asc', _id: -1 });
@@ -37,15 +53,17 @@ const getVisit = async (req, res, next) => {
             console.log(err)
             return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
         }
+        if (!!condition) {
 
-        let enhancedDiagnsosis = {
-            _id: condition._id,
-            name: condition.name,
-            dateOfDiagnosis: condition.dateOfDiagnosis,
-            dateOfDiagnosis: condition.dateOfDiagnosis,
+            let enhancedDiagnsosis = {
+                _id: condition._id,
+                name: condition.name,
+                dateOfDiagnosis: condition.dateOfDiagnosis,
+                dateOfDiagnosis: condition.dateOfDiagnosis,
 
+            }
+            diagnosisList.push(enhancedDiagnsosis)
         }
-        diagnosisList.push(enhancedDiagnsosis)
     }
 
 
@@ -174,8 +192,8 @@ const createVisit = async (req, res, next) => {
             dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
             dateOfHealing: diagnosisList[i].dateOfHealing,
             diagnosis: diagnosisId,
-            cleronomical:false,
-            patient:patientId
+            cleronomical: false,
+            patient: patientId
 
         })
 
@@ -287,7 +305,7 @@ const updateVisit = async (req, res, next) => {
     const { date, condition, posotita, syxnotita, farmakaList, therapeiaList, diagnosisList, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
     console.log(date, diagnosisList, therapeiaList, geniki_eikona)
     let visit, therapeia, diagnosis;
-    let visitId ;
+    let visitId;
     let therapeiaId = mongoose.Types.ObjectId();
     let diagnosisId = mongoose.Types.ObjectId();
 
@@ -300,7 +318,7 @@ const updateVisit = async (req, res, next) => {
     if (!visit) {
         return next(new HttpError('Δεν υπάρχει ο συγκεκριμένος ασθενής για την εύρεση επίσκεψης.', 404));
     }
-    visitId=visit._id;
+    visitId = visit._id;
     visit.geniki_eikona = geniki_eikona;
     visit.aitia_proseleusis = aitia_proseleusis;
     visit.piesi = piesi;
@@ -323,7 +341,7 @@ const updateVisit = async (req, res, next) => {
         return next(error);
     }
     ///find all values and delete
-    let therapeias,farmako,conditio_to_delete;
+    let therapeias, farmako, conditio_to_delete;
     try {
         diagnosis = await Diagnosis.find({ visit: visit._id }).sort({ field: 'asc', _id: -1 });
     } catch (err) {
@@ -360,9 +378,9 @@ const updateVisit = async (req, res, next) => {
             console.log(err)
             return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
         }
-        try{
+        try {
             therapeias[i].deleteOne();
-        }catch(err){
+        } catch (err) {
             console.log(err)
         }
 
@@ -379,7 +397,7 @@ const updateVisit = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Creating new Visit failed.', 500));
     }
-    console.log('id:',visitId)
+    console.log('id:', visitId)
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
@@ -410,8 +428,8 @@ const updateVisit = async (req, res, next) => {
             dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
             dateOfHealing: diagnosisList[i].dateOfHealing,
             diagnosis: diagnosisId,
-            cleronomical:false,
-            patient:patientId
+            cleronomical: false,
+            patient: patientId
 
         })
 
@@ -480,7 +498,7 @@ const updateVisit = async (req, res, next) => {
             name: therapeiaList[i].name,
             ATC_name: therapeiaList[i].ATC_name,
             therapeia: therapeiaId,
-            patient:patientId
+            patient: patientId
 
         })
 
@@ -514,7 +532,7 @@ const updateVisit = async (req, res, next) => {
 
 
 
-
+exports.getAllVisits = getAllVisits;
 exports.getVisit = getVisit;
 exports.updateVisit = updateVisit;
 exports.createVisit = createVisit;
