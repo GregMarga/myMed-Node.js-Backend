@@ -4,6 +4,33 @@ const mongoose = require('mongoose');
 const HttpError = require('../models/http-error');
 const fs = require('fs');
 
+
+const getFiles = async (req, res, next) =>{
+    const patientId=req.params.pid;
+    let patient,exam;
+    let filesList=[];
+
+    try {
+        patient = await Patient.findById(patientId);
+    } catch (err) {
+        return next(new HttpError('Η ανάσυρση των αρχείων απέτυχε.', 500));
+    }
+    if (!patient) {
+        return next(new HttpError('Δεν βρέθηκε ασθενής για την εύρεση των αρχείων.', 404));
+    }
+
+    for (let i=0;i<patient.exams.length;i++){
+        try {
+            exam = await Exam.findById(patient.exams[i]);
+        } catch (err) {
+            return next(new HttpError('Η ανάσυρση των αρχείων απέτυχε.', 500));
+        }
+        filesList.push(exam)
+    }
+    res.json({filesList:filesList})
+    
+}
+
 const saveFile = async (req, res, next) => {
     const patientId=req.params.pid;
     const {id,type,dateOfDiagnosis,dateOfVisit,name}=req.body;
@@ -86,6 +113,6 @@ const deleteExam = async (req, res, next) => {
     res.json({status:'deleted'});
 }
 
-
-exports.saveFile=saveFile
-exports.deleteExam=deleteExam
+exports.getFiles=getFiles;
+exports.saveFile=saveFile;
+exports.deleteExam=deleteExam;

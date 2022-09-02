@@ -1,4 +1,5 @@
 const HttpError = require('../models/http-error');
+const Patient = require('../models/patient')
 const Condition = require('../models/condition');
 const Atomiko = require('../models/atomiko');
 const Anamnistiko = require('../models/anamnistiko')
@@ -16,55 +17,161 @@ const createConditionAtomiko = async (req, res, next) => {
     const patientId = req.params.pid;
     console.log(patientId)
     const { name, status, dateOfDiagnosis, dateOfHealing, _id } = req.body;
-    console.log(name)
-    let atomiko, anamnistiko;
+    console.log(name, _id)
+    let atomiko, anamnistiko, patient;
     try {
         anamnistiko = await Anamnistiko.findOne({ patient: patientId });
     } catch (err) {
         console.log(err)
         return next(new HttpError('Η δημιουργία νέας πάθησης  απέτυχε.', 500));
     }
-    if (!anamnistiko) {
-        return next(new HttpError('Δεν υπάρχει καταγεγραμμένο αναμνηστικό για τον συγκεκριμένο ασθενή.', 404));
-    }
-    try {
-        atomiko = await Atomiko.findById(anamnistiko.atomiko);
-    } catch (err) {
-        console.log(err)
-        return next(new HttpError('Η δημιουργία νέας πάθησης  απέτυχε.', 500));
-    }
-    if (!atomiko) {
-        return next(new HttpError('Δεν υπάρχει καταγεγραμμένο αναμνηστικό για τον συγκεκριμένο ασθενή.', 404));
-    }
-    const createdCondition = new Condition({
-        _id: _id,
-        name: name,
-        status,
-        allergy: false,
-        dateOfDiagnosis: dateOfDiagnosis,
-        dateOfHealing: dateOfHealing,
-        atomiko: atomiko._id,
-        patient: patientId,
-        cleronomical: false
+    if (!anamnistiko) {         /////////// an den yparxei anamnistiko dhmioyrgia toy
 
-    })
+        let anamnistikoId = mongoose.Types.ObjectId();
+        let atomikoId = mongoose.Types.ObjectId();
+        try {
+            patient = await Patient.findById(patientId);
+        } catch (err) {
+            return next(new HttpError('Η δημιουργία του αναμνηστικού απέτυχε.', 500));
+        }
+        if (!patient) {
+            return next(new HttpError('Δεν υπάρχει καταγεγραμμένος ο συγκεκριμένος ασθενής.', 404));
+        }
+        const createdAnamnistiko = new Anamnistiko({
+            _id: anamnistikoId,
+            surgeries: [],
+            patient: patientId
+        })
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdAnamnistiko.save({ session: sess });
+            patient.anamnistiko = createdAnamnistiko;
+            await patient.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Η Δημιουργία αναμνηστικού απέτυχε,παρακαλώ προσπαθηστε ξανά.',
+                500
+            );
+            return next(error);
+        }
+        try {
+            anamnistiko = await Anamnistiko.findById(anamnistikoId);
+        } catch (err) {
+            return next(new HttpError('Η δημιουργία του αναμνηστικού απέτυχε.', 500));
+        }
+        if (!anamnistiko) {
+            return next(new HttpError('Δεν υπάρχει καταγεγραμμένο αναμνηστικό.', 404));
+        }
+        const createdAtomiko = new Atomiko({
+            _id: atomikoId,
+            conditions: [],
+            anamnistiko: anamnistikoId
+        });
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdAtomiko.save({ session: sess });
+            anamnistiko.atomiko = createdAtomiko;
 
-    try {
-        const sess = await mongoose.startSession();
-        sess.startTransaction();
-        await createdCondition.save({ session: sess });
-        atomiko.conditions.push(createdCondition);
-        await atomiko.save({ session: sess });
-        await sess.commitTransaction();
-    } catch (err) {
-        console.log(err)
-        const error = new HttpError(
-            'Η δημιουργία νέας πάθησης απέτυχε, παρακαλώ προσπαθήστε ξανά.',
-            500
-        );
-        return next(error);
+            await anamnistiko.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Η δημιουργία της πάθησης απέτυχε, δοκιμάστε ξανά.',
+                500
+            );
+            return next(error);
+        }
+        try {
+            atomiko = await Atomiko.findById(atomikoId);
+        } catch (err) {
+            return next(new HttpError('Η δημιουργία της πάθησης απέτυχε.', 500));
+        }
+        if (!atomiko) {
+            return next(new HttpError('Δεν υπάρχει ατομικό αναμνηστικό.', 404));
+        }
+        const createdCondition = new Condition({
+            _id: _id,
+            name: name,
+            allergy: false,
+            dateOfDiagnosis: dateOfDiagnosis,
+            dateOfHealing: dateOfHealing,
+            atomiko: atomikoId,
+            patient: patientId,
+            cleronomical: false
+
+        })
+
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdCondition.save({ session: sess });
+            atomiko.conditions.push(createdCondition);
+            await atomiko.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Η δημιουργία του αναμνηστικό απέτυχε, παρακαλώ προσπαθήστε ξανά.',
+                500
+            );
+            return next(error);
+        }
+
+
+
+
+
+
+
+
     }
 
+
+    /////////////////////////////////////////////////////// an yparxei anamnistiko apla prosthiki pathisis
+    else {
+        try {
+            atomiko = await Atomiko.findById(anamnistiko.atomiko);
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η δημιουργία νέας πάθησης  απέτυχε.', 500));
+        }
+        if (!atomiko) {
+            return next(new HttpError('Δεν υπάρχει καταγεγραμμένο αναμνηστικό για τον συγκεκριμένο ασθενή.', 404));
+        }
+        const createdCondition = new Condition({
+            _id: _id,
+            name: name,
+            status,
+            allergy: false,
+            dateOfDiagnosis: dateOfDiagnosis,
+            dateOfHealing: dateOfHealing,
+            atomiko: atomiko._id,
+            patient: patientId,
+            cleronomical: false
+
+        })
+
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdCondition.save({ session: sess });
+            atomiko.conditions.push(createdCondition);
+            await atomiko.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Η δημιουργία νέας πάθησης απέτυχε, παρακαλώ προσπαθήστε ξανά.',
+                500
+            );
+            return next(error);
+        }
+    }
 }
 
 
@@ -72,7 +179,7 @@ const getConditionsbyPatientId = async (req, res, next) => {
     const patientId = req.params.pid;
     let conditions, conditionsList = []
     try {
-        conditions = await Condition.find({ patientId: patientId })
+        conditions = await Condition.find({ patient: patientId })
     } catch (err) {
         console.log(err)
         return next(new HttpError('Αποτυχία φόρτωσης του ατομικού ιστορικού.', 500))
@@ -82,6 +189,7 @@ const getConditionsbyPatientId = async (req, res, next) => {
             conditionsList.push(conditions[i])
         }
     }
+
     res.json({ conditionsList: conditionsList });
 
 }
@@ -91,7 +199,7 @@ const getKlironomikobyPatientId = async (req, res, next) => {
     const patientId = req.params.pid;
     let conditions, conditionsList = []
     try {
-        conditions = await Condition.find({ patientId: patientId })
+        conditions = await Condition.find({ patient: patientId })
     } catch (err) {
         console.log(err)
         return next(new HttpError('Αποτυχία φόρτωσης του ατομικού ιστορικού.', 500))
@@ -111,7 +219,7 @@ const getAllergiesbyPatientId = async (req, res, next) => {
     const patientId = req.params.pid;
     let conditions, allergiesList = []
     try {
-        conditions = await Condition.find({ patientId: patientId })
+        conditions = await Condition.find({ patient: patientId })
     } catch (err) {
         console.log(err)
         return next(new HttpError('Αποτυχία φόρτωσης  ιστορικού αλλεργιών. ', 500))
@@ -127,7 +235,7 @@ const getAllergiesbyPatientId = async (req, res, next) => {
 
 
 const deleteConditionsbyId = async (req, res, next) => {
-    const conditionId=req.params.conditionId;
+    const conditionId = req.params.conditionId;
     let condition, atomiko, klironomiko, diagnosis;
     try {
         condition = await Condition.findById(conditionId)
@@ -191,7 +299,7 @@ const deleteConditionsbyId = async (req, res, next) => {
 }
 
 exports.getId = getId;
-exports.createConditionAtomiko=createConditionAtomiko;
+exports.createConditionAtomiko = createConditionAtomiko;
 exports.deleteConditionsbyId = deleteConditionsbyId;
 exports.getConditionsbyPatientId = getConditionsbyPatientId;
 exports.getAllergiesbyPatientId = getAllergiesbyPatientId;

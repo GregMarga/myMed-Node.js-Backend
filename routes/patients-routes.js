@@ -29,9 +29,9 @@ router.post('/:pid/uploads/exams', examsUpload.single('exam'), examsController.s
 
 router.patch('/:pid/files/:fileId', fileUpload.single('image'), fileController.updateFile);
 
-router.post('/:pid/basic/image',
+router.post('/:pid/basic/image', fileUpload.single('image'),
     body('amka').isLength({ min: 11, max: 11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
-    validateRequestSchema, fileUpload.single('image'), basicsControllers.createImageBasics);
+    validateRequestSchema, basicsControllers.createImageBasics);
 
 router.patch('/:pid/basic/image', fileUpload.single('image'),
     body('amka').isLength({ min: 11, max: 11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
@@ -61,7 +61,7 @@ router.post('/:pid/basic', basicsControllers.createBasics);
 
 
 router.patch('/:pid/basic',
-    body('amka').isLength({ min: 11,max:11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
+    body('amka').isLength({ min: 11, max: 11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
     validateRequestSchema,
     basicsControllers.updateBasics);
 
@@ -128,9 +128,11 @@ router.patch('/:pid/lab_tests/:labId', labTestControllers.updateLabTest);
 
 router.post('/:pid/lab_tests', labTestControllers.createLabTest);
 
-router.get('/:pid/files', fileController.getFiles);
 
-router.delete('/:pid/files/:fileId', fileController.deleteFile);
+router.get('/:pid/exams',  examsController.getFiles)
+// router.get('/:pid/files', fileController.getFiles);
+
+// router.delete('/:pid/files/:fileId', fileController.deleteFile);
 
 router.delete('/:pid/uploads/exams/:examId', examsUpload.single('exam'), examsController.deleteExam);
 

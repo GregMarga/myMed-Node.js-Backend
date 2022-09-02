@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const maieutikoSchema = Schema({
     date_of_birth: { type: Date, required: false },
     gennisi: { type: String, required: false },
-    baby_weight: { type: Number, required: false },
+    baby_weight: { type: String, required: false },
     comments: { type: String, required: false },
    
 

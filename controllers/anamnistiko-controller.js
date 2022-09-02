@@ -15,6 +15,7 @@ const getAnamnstiko = async (req, res, next) => {
     const userId = req.params.pid;
 
     const gender = req.params.gender;
+    let patient;
     let anamnistiko;
     let conditions;
     let conditionsList = [];
@@ -26,9 +27,24 @@ const getAnamnstiko = async (req, res, next) => {
 
     let maieutiko;
     let gynaikologiko;
+
+
+
+    try {
+        patient = await Patient.findById(userId);
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Απέτυχε η ανάκτηση του ιστορικού,παρακαλώ προσπαθήστε ξανά.', 500));
+    }
+    console.log('anamnistiko id:', patient.anamnistiko)
+    if (!patient.anamnistiko) {
+        console.log('in')
+        return res.json()
+    }
     try {
         anamnistiko = await Anamnistiko.findOne({ patient: userId }).sort({ field: 'asc', _id: -1 });
     } catch (err) {
+        console.log(err)
         return next(new HttpError('Απέτυχε η ανάκτηση του ιστορικού,παρακαλώ προσπαθήστε ξανά.', 500));
     }
 
@@ -44,11 +60,11 @@ const getAnamnstiko = async (req, res, next) => {
     }
     for (let i = 0; i < conditions.length; i++) {
 
-        if (!conditions[i].allergy&&!conditions[i].cleronomical) {
+        if (!conditions[i].allergy && !conditions[i].cleronomical) {
             conditionsList.push(conditions[i])
-        } else if(conditions[i].allergy){
+        } else if (conditions[i].allergy) {
             allergies.push(conditions[i])
-        }else if(conditions[i].cleronomical){
+        } else if (conditions[i].cleronomical) {
             cleronomicalList.push(conditions[i])
         }
     }
@@ -95,8 +111,8 @@ const getAnamnstiko = async (req, res, next) => {
             return next(new HttpError('Fetching history info failed,please try again later.', 500));
         }
     }
-
-    res.json({ allergies, conditionsList, surgeries, gynaikologiko, maieutiko,cleronomicalList })
+    console.log('maieytiko:',maieutiko)
+    res.json({ allergies, conditionsList, surgeries, gynaikologiko, maieutiko, cleronomicalList })
 };
 
 
@@ -105,15 +121,17 @@ const getAnamnstiko = async (req, res, next) => {
 const createAnamnistiko = async (req, res, next) => {
     const patientId = req.params.pid;
     const { allergies, cleronomical, conditions, surgeries, gynaikologiko } = req.body;
+    console.log(gynaikologiko)
+    console.log('in:', patientId)
 
 
     let patient, anamnistiko, atomiko, klironomiko, surgery, gynaikologika;
     let klironomikoId = mongoose.Types.ObjectId();
     let anamnistikoId = mongoose.Types.ObjectId();
     let atomikoId = mongoose.Types.ObjectId();
-    let surgeriesId = mongoose.Types.ObjectId();
+    let surgeriesId;
     let gynaikologikoId = mongoose.Types.ObjectId();
-    let maieutikoId = mongoose.Types.ObjectId();
+    let maieutikoId;
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {
@@ -137,7 +155,7 @@ const createAnamnistiko = async (req, res, next) => {
     } catch (err) {
         console.log(err)
         const error = new HttpError(
-            'Creating anamnistiko failed, please try again.',
+            'Η Δημιουργία αναμνηστικού απέτυχε,παρακαλώ προσπαθηστε ξανά.',
             500
         );
         return next(error);
@@ -147,7 +165,7 @@ const createAnamnistiko = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Η δημιουργία του αναμνηστικού απέτυχε.', 500));
     }
-    if (!patient) {
+    if (!anamnistiko) {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένο αναμνηστικό.', 404));
     }
     const createdAtomiko = new Atomiko({
@@ -307,11 +325,13 @@ const createAnamnistiko = async (req, res, next) => {
     //     return next(new HttpError('Δεν υπάρχει ιστορικό χειρουργείων.', 404));
     // }
     for (let i = 0; i < surgeries.length; i++) {
+        surgeriesId = mongoose.Types.ObjectId();
         const createdSurgeries = new Surgery({
             _id: surgeriesId,
-            title: surgeries[i].name,
+            title: surgeries[i].title,
             dateOfEntrance: surgeries[i].dateOfEntrance,
             dateOfExit: surgeries[i].dateOfExit,
+            hospital: surgeries[i].hospital,
             anamnistiko: anamnistikoId,
             patient: patientId
         })
@@ -338,13 +358,15 @@ const createAnamnistiko = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Η δημιουργία του αναμνηστικού απέτυχε.', 500));
     }
-    if (!atomiko) {
+    if (!gynaikologika) {
         return next(new HttpError('Δεν υπάρχει γυναικολογικό αναμνηστικό.', 404));
     }
     for (let i = 0; i < gynaikologiko.pregnacyList.length; i++) {
+        console.log('hereeeeeeeeeeeeeeeee:', gynaikologiko.pregnacyList[i].date_of_birth)
+        let maieutikoId = mongoose.Types.ObjectId();
         const createdMaieutiko = new Maieutiko({
-            _id: surgeriesId,
-            date: gynaikologiko.pregnacyList[i].date,
+            _id: maieutikoId,
+            date_of_birth: gynaikologiko.pregnacyList[i].date_of_birth,
             gennisi: gynaikologiko.pregnacyList[i].gennisi,
             baby_weight: gynaikologiko.pregnacyList[i].baby_weight,
             comments: gynaikologiko.pregnacyList[i].comments,
@@ -371,13 +393,13 @@ const createAnamnistiko = async (req, res, next) => {
 
 
 
-    res.status(201).json({ anamnistiko: createdAnamnistiko })
+    res.status(201).json({ _id: anamnistiko._id })
 }
 
 
 
-const deleteOldValues = async (patientId,next) => {
-    let anamnistiko, atomiko, klironomiko;
+const deleteOldValues = async (patientId, next) => {
+    let anamnistiko, atomiko, klironomiko, gynaikologiko;
     let klironomikoId;
     let anamnistikoId;
     let atomikoId;
@@ -398,11 +420,20 @@ const deleteOldValues = async (patientId,next) => {
     gynaikologikoId = anamnistiko.gynaikologiko;
 
     try {
-        await Gynaikologiko.findById(gynaikologikoId).deleteOne()
+        gynaikologiko = await Gynaikologiko.findById(gynaikologikoId)
     } catch (err) {
         console.log(err)
         return next(new HttpError('Η ενημέρωση του αναμνηστικού απέτυχε.', 500));
     }
+    for (let i = 0; i < gynaikologiko.maieutiko.length; i++) {
+        try {
+            await Maieutiko.findById(gynaikologiko.maieutiko[i]).deleteOne()
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η ενημέρωση του αναμνηστικού απέτυχε.', 500));
+        }
+    }
+    gynaikologiko.deleteOne()
 
     for (let i = 0; i < anamnistiko.surgeries.length; i++) {
         try {
@@ -462,6 +493,7 @@ const deleteOldValues = async (patientId,next) => {
     } catch (err) {
         console.log(err);
     }
+    res.json({ _id: anamnistiko._id })
 }
 
 
@@ -474,7 +506,7 @@ const updateAnamnistiko = async (req, res, next) => {
 
 
     ///find all old values and delete
-    deleteOldValues(patientId,next);
+    deleteOldValues(patientId, next);
 
 
     //create new values
@@ -483,9 +515,9 @@ const updateAnamnistiko = async (req, res, next) => {
     let klironomikoId = mongoose.Types.ObjectId();
     let anamnistikoId = mongoose.Types.ObjectId();
     let atomikoId = mongoose.Types.ObjectId();
-    let surgeriesId = mongoose.Types.ObjectId();
+    let surgeriesId;
     let gynaikologikoId = mongoose.Types.ObjectId();
-    let maieutikoId = mongoose.Types.ObjectId();
+    let maieutikoId;
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {
@@ -679,9 +711,10 @@ const updateAnamnistiko = async (req, res, next) => {
     //     return next(new HttpError('Δεν υπάρχει ιστορικό χειρουργείων.', 404));
     // }
     for (let i = 0; i < surgeries.length; i++) {
+        let surgeriesId = mongoose.Types.ObjectId();
         const createdSurgeries = new Surgery({
             _id: surgeriesId,
-            title: surgeries[i].name,
+            title: surgeries[i].title,
             dateOfEntrance: surgeries[i].dateOfEntrance,
             dateOfExit: surgeries[i].dateOfExit,
             anamnistiko: anamnistikoId,
@@ -714,9 +747,10 @@ const updateAnamnistiko = async (req, res, next) => {
         return next(new HttpError('Δεν υπάρχει γυναικολογικό αναμνηστικό.', 404));
     }
     for (let i = 0; i < gynaikologiko.pregnacyList.length; i++) {
+        let maieutikoId = mongoose.Types.ObjectId();
         const createdMaieutiko = new Maieutiko({
-            _id: surgeriesId,
-            date: gynaikologiko.pregnacyList[i].date,
+            _id: maieutikoId,
+            date_of_birth: gynaikologiko.pregnacyList[i].date_of_birth,
             gennisi: gynaikologiko.pregnacyList[i].gennisi,
             baby_weight: gynaikologiko.pregnacyList[i].baby_weight,
             comments: gynaikologiko.pregnacyList[i].comments,
