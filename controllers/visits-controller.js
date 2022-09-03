@@ -3,19 +3,29 @@ const HttpError = require('../models/http-error');
 const Patient = require('../models/patient');
 const Visit = require('../models/visit');
 const Farmako = require('../models/farmako');
-const Diagnosis = require('../models/diagnosis')
+const Diagnosis = require('../models/diagnosis');
+const Ozos = require('../models/ozos')
 const Condition = require('../models/condition');
 const Therapeia = require('../models/therapeia');
 
 
 const getAllVisits = async (req, res, next) => {
     const patientId = req.params.pid;
-    let visits;
+    console.log(patientId)
+    let patient, visits = [];
     try {
-        visits = await Visit.find({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+        patient = await Patient.findById(patientId);
     } catch (err) {
         console.log(err)
         return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
+    }
+    if (patient.visits.length > 0) {
+        try {
+            visits = await Visit.find({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
+        }
     }
     res.status(201).json({ visitList: visits })
 }
@@ -23,7 +33,7 @@ const getAllVisits = async (req, res, next) => {
 const getVisit = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId
-    let visit, condition, diagnosis, diagnosisList = [], therapeias, farmako, therapeiaList = [];
+    let visit, condition, diagnosis, diagnosisList = [], therapeias, farmako, ozos, therapeiaList = [], ozosList = [];
     try {
         if (visitId === 'new') {                        /// an einai kainouria episkepsi fortwse ta dedomena tis pio prosfatis
             visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
@@ -35,10 +45,35 @@ const getVisit = async (req, res, next) => {
         return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
     }
     if (!visit) {
-        return next(new HttpError('Δεν υπάρχει ο συγκεκριμένος ασθενής για την εύρεση επίσκεψης.', 404));
+        return res.json(visit, diagnosisList, therapeiaList, ozosList);
+    }
+
+    /////////////////////// find ozous
+    try {
+        ozos = await Ozos.find({ visit: visit._id }).sort({ field: 'asc', _id: -1 });
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
+    }
+
+    for (let i = 0; i < ozos.length; i++) {
+
+        let enhancedOzos = {
+            _id: mongoose.Types.ObjectId(),
+            name: ozos[i].name,
+            length:ozos[i].length,
+            height:ozos[i].height,
+            depth:ozos[i].depth,
+            dateOfFinding:ozos[i].dateOfFinding
+        }
+
+        ozosList.push(enhancedOzos)
+
     }
 
 
+
+    ///////////////// find conditions/diagnoses
     try {
         diagnosis = await Diagnosis.find({ visit: visit._id }).sort({ field: 'asc', _id: -1 });
     } catch (err) {
@@ -69,7 +104,7 @@ const getVisit = async (req, res, next) => {
     }
 
 
-
+    ///// find therapeias farmaka
     try {
         therapeias = await Therapeia.find({ visit: visit._id }).sort({ field: 'asc', _id: -1 });
     } catch (err) {
@@ -99,16 +134,16 @@ const getVisit = async (req, res, next) => {
 
 
 
-    res.json({ visit, diagnosisList, therapeiaList })
+    res.json({ visit, diagnosisList, therapeiaList, ozosList })
 }
 
 
 const createVisit = async (req, res, next) => {
     const patientId = req.params.pid;
     console.log('patient:', patientId)
-    const { date, syxnotita, farmakaList, therapeiaList, diagnosisList, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
+    const { date, ozosList, therapeiaList, diagnosisList, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
     let condition, farmako;
-    console.log(diagnosisList)
+    console.log(ozosList)
     let visit, therapeia, diagnosis;
     let visitId = mongoose.Types.ObjectId();
     let therapeiaId = mongoose.Types.ObjectId();
@@ -166,6 +201,32 @@ const createVisit = async (req, res, next) => {
         return next(new HttpError('Creating new Visit failed.', 500));
     }
 
+    for (let i = 0; i < ozosList.length; i++) {
+        const createdOzos = new Ozos({
+            _id: ozosList[i]._id,
+            name: ozosList[i].name,
+            depth: ozosList[i].depth,
+            length: ozosList[i].length,
+            height: ozosList[i].height,
+            dateOfFinding: ozosList[i].dateOfFinding,
+            visit: visitId
+        })
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdOzos.save({ session: sess });
+            visit.ozos.push(createdOzos);
+            await visit.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Η δημιουργία επίσκεψης απέτυχε,παρακαλώ δοκιμάστε ξανά.',
+                500
+            );
+            return next(error);
+        }
+    }
 
 
 

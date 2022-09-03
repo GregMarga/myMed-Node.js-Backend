@@ -12,7 +12,6 @@ const conditionHits = async (req, res, next) => {
     index
         .search(conditionQuery)
         .then(({ hits }) => {
-            console.log(hits[0]);
             res.json(hits.slice(0, 9));
         })
         .catch((err) => console.log(err));
