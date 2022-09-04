@@ -1,5 +1,6 @@
 const HttpError = require('../models/http-error');
-const Patient = require('../models/patient')
+const Patient = require('../models/patient');
+const Visit=require('../models/visit')
 const Condition = require('../models/condition');
 const Atomiko = require('../models/atomiko');
 const Anamnistiko = require('../models/anamnistiko')
@@ -15,9 +16,8 @@ const getId = async (req, res, next) => {
 
 const createConditionAtomiko = async (req, res, next) => {
     const patientId = req.params.pid;
-    console.log(patientId)
     const { name, status, dateOfDiagnosis, dateOfHealing, _id } = req.body;
-    console.log(name, _id)
+
     let atomiko, anamnistiko, patient;
     try {
         anamnistiko = await Anamnistiko.findOne({ patient: patientId });
@@ -215,7 +215,7 @@ const getKlironomikobyPatientId = async (req, res, next) => {
 
 
 const getAllergiesbyPatientId = async (req, res, next) => {
-    console.log('in')
+   
     const patientId = req.params.pid;
     let conditions, allergiesList = []
     try {
@@ -236,7 +236,8 @@ const getAllergiesbyPatientId = async (req, res, next) => {
 
 const deleteConditionsbyId = async (req, res, next) => {
     const conditionId = req.params.conditionId;
-    let condition, atomiko, klironomiko, diagnosis;
+   
+    let condition, atomiko, klironomiko, diagnosis,visit;
     try {
         condition = await Condition.findById(conditionId)
     } catch (err) {
@@ -278,11 +279,19 @@ const deleteConditionsbyId = async (req, res, next) => {
             return next(new HttpError('Αποτυχία διαγραφής πάθησης.', 500))
         }
         try {
+            visit = await Visit.findById(diagnosis.visit)
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Αποτυχία διαγραφής πάθησης.', 500))
+        }
+
+        try {
             const sess = await mongoose.startSession();
             sess.startTransaction();
-            diagnosis.conditions.pull(condition);
-            await diagnosis.save({ session: sess });
-            await condition.deleteOne();
+            visit.diagnosis.pull(diagnosis);
+            await visit.save({ session: sess });
+            await diagnosis.deleteOne({ session: sess });
+            await condition.deleteOne({ session: sess });
             await sess.commitTransaction();
         } catch (err) {
             console.log(err)

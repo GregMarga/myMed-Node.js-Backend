@@ -11,7 +11,6 @@ const Therapeia = require('../models/therapeia');
 
 const getAllVisits = async (req, res, next) => {
     const patientId = req.params.pid;
-    console.log(patientId)
     let patient, visits = [];
     try {
         patient = await Patient.findById(patientId);
@@ -61,10 +60,10 @@ const getVisit = async (req, res, next) => {
         let enhancedOzos = {
             _id: mongoose.Types.ObjectId(),
             name: ozos[i].name,
-            length:ozos[i].length,
-            height:ozos[i].height,
-            depth:ozos[i].depth,
-            dateOfFinding:ozos[i].dateOfFinding
+            length: ozos[i].length,
+            height: ozos[i].height,
+            depth: ozos[i].depth,
+            dateOfFinding: ozos[i].dateOfFinding
         }
 
         ozosList.push(enhancedOzos)
@@ -393,22 +392,24 @@ const createVisit = async (req, res, next) => {
 
 const updateVisit = async (req, res, next) => {
     const patientId = req.params.pid;
-    const { date, condition, posotita, syxnotita, farmakaList, therapeiaList, diagnosisList, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
-    let visit, therapeia, diagnosis;
-    let visitId;
+    const visitId = req.params.visitId;
+    console.log(patientId, visitId)
+    const { ozosList, date, posotita, syxnotita, farmakaList, therapeiaList, diagnosisList, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
+    let visit, therapeia, diagnosis, condition;
     let therapeiaId
     let diagnosisId = mongoose.Types.ObjectId();
 
     try {
-        visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+        visit = await Visit.findById(visitId);
     } catch (err) {
         console.log(err)
         return next(new HttpError('Η φόρτωση της επίσκεψης απέτυχε.', 500));
     }
+    console.log(visit)
     if (!visit) {
         return next(new HttpError('Δεν υπάρχει ο συγκεκριμένος ασθενής για την εύρεση επίσκεψης.', 404));
     }
-    visitId = visit._id;
+
     visit.geniki_eikona = geniki_eikona;
     visit.aitia_proseleusis = aitia_proseleusis;
     visit.piesi = piesi;
@@ -432,6 +433,14 @@ const updateVisit = async (req, res, next) => {
     }
     ///find all values and delete
     let therapeias, farmako, conditio_to_delete;
+
+    try {
+        await Ozos.find({ visit: visit._id }).deleteMany();
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η ενημέρωση της επίσκεψης απέτυχε.', 500));
+    }
+
     try {
         diagnosis = await Diagnosis.find({ visit: visit._id }).sort({ field: 'asc', _id: -1 });
     } catch (err) {
@@ -489,6 +498,35 @@ const updateVisit = async (req, res, next) => {
 
 
 
+    for (let i = 0; i < ozosList.length; i++) {
+        const createdOzos = new Ozos({
+            _id: ozosList[i]._id,
+            name: ozosList[i].name,
+            depth: ozosList[i].depth,
+            length: ozosList[i].length,
+            height: ozosList[i].height,
+            dateOfFinding: ozosList[i].dateOfFinding,
+            visit: visitId
+        })
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdOzos.save({ session: sess });
+            visit.ozos.push(createdOzos);
+            await visit.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Η δημιουργία επίσκεψης απέτυχε,παρακαλώ δοκιμάστε ξανά.',
+                500
+            );
+            return next(error);
+        }
+    }
+
+
+
     for (let i = 0; i < diagnosisList.length; i++) {
         const createdDiagnosis = new Diagnosis({
             _id: diagnosisList[i]._id,
@@ -515,25 +553,34 @@ const updateVisit = async (req, res, next) => {
             return next(new HttpError('Creating new Visit failed.', 500));
         }
 
+        try {
+            condition = await Condition.findById(diagnosisList[i].conditionId); /////////lathos
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Creating new Visit failed.', 500));
+        }
 
+        if (!condition) {
 
-        const createdCondition = new Condition({
+            condition = new Condition({
 
-            name: diagnosisList[i].name,
-            allergy: false,
-            dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
-            dateOfHealing: diagnosisList[i].dateOfHealing,
-            diagnosis: diagnosisList[i]._id,
-            cleronomical: false,
-            patient: patientId
+                name: diagnosisList[i].name,
+                allergy: false,
+                dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
+                dateOfHealing: diagnosisList[i].dateOfHealing,
+                diagnosis: diagnosisList[i]._id,
+                cleronomical: false,
+                patient: patientId
 
-        })
+            })
+        }
+        console.log('conditionId:', condition, condition._id)//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         try {
             const sess = await mongoose.startSession();
             sess.startTransaction();
-            await createdCondition.save({ session: sess });
-            diagnosis.condition = createdCondition;
+            await condition.save({ session: sess });
+            diagnosis.condition = condition._id;
             await diagnosis.save({ session: sess });
             await sess.commitTransaction();
         } catch (err) {
@@ -551,7 +598,7 @@ const updateVisit = async (req, res, next) => {
 
 
     for (let i = 0; i < therapeiaList.length; i++) {
-
+        //    console.log('therapeia:',therapeiaList[i])
 
         const createdTherapeia = new Therapeia({
             _id: therapeiaList[i]._id,
@@ -590,19 +637,27 @@ const updateVisit = async (req, res, next) => {
             return next(new HttpError('Creating new Visit failed.', 500));
         }
 
-        const createdFarmako = new Farmako({
-            name: therapeiaList[i].name,
-            ATC_name: therapeiaList[i].ATC_name,
-            therapeia: therapeiaList[i]._id,
-            patient: patientId
+        try {
+            farmako = await Farmako.findById(therapeiaList[i].farmakoId);
+        } catch (err) {
+            return next(new HttpError('Creating new Visit failed.', 500));
+        }
+        console.log(farmako, therapeiaList[i].farmakoId)
+        if (!farmako) {
 
-        })
+            farmako = new Farmako({
+                name: therapeiaList[i].name,
+                ATC_name: therapeiaList[i].ATC_name,
+                therapeia: therapeiaList[i]._id,
+                patient: patientId
 
+            })
+        }
         try {
             const sess = await mongoose.startSession();
             sess.startTransaction();
-            await createdFarmako.save({ session: sess });
-            therapeia.farmako = createdFarmako;
+            await farmako.save({ session: sess });
+            therapeia.farmako = farmako._id;
             await therapeia.save({ session: sess });
             await sess.commitTransaction();
         } catch (err) {
@@ -615,9 +670,6 @@ const updateVisit = async (req, res, next) => {
         }
 
     }
-
-
-
 
 
 

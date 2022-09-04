@@ -6,7 +6,6 @@ const User = require('../models/user');
 
 const getBasics = async (req, res, next) => {
     const patientId = req.params.pid;
-    console.log('patientId:', patientId)
     let patient;
     try {
         patient = await Patient.findById(patientId);

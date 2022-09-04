@@ -108,7 +108,7 @@ router.get('/:pid/visits', visitControllers.getAllVisits);
 
 // router.get('/visits/createVisitId', visitControllers.createVisitId);
 
-router.patch('/:pid/visits/', visitControllers.updateVisit);
+router.patch('/:pid/visits/:visitId', visitControllers.updateVisit);
 
 // router.delete('/:pid/visits/:vid', visitControllers.deleteVisit);
 

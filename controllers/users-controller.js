@@ -125,7 +125,7 @@ const login = async (req, res, next) => {
         token = jwt.sign(
             { userId: existingUser.id, email: existingUser.email },
             process.env.JWT_KEY,
-            { expiresIn: '1h' }
+            { expiresIn: '2h' }
         )
     } catch (err) {
         return next(new HttpError('Αποτυχία σύνδεσης,παρακαλώ προσπαθήστε ξανά.', 500));
@@ -141,7 +141,7 @@ const confirmUser = async (req, res, next) => {
         token = jwt.sign(
             { userId: userId, email: 'test@gmail.com' },
             process.env.JWT_KEY,
-            { expiresIn: '1h' }
+            { expiresIn: '2h' }
         )
     } catch (err) {
         console.log(err)
