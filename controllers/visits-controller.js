@@ -268,6 +268,7 @@ const createVisit = async (req, res, next) => {
 
                 name: diagnosisList[i].name,
                 allergy: false,
+                status:diagnosisList[i].status,
                 dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
                 dateOfHealing: diagnosisList[i].dateOfHealing,
                 diagnosis: diagnosisList[i]._id,
@@ -566,6 +567,7 @@ const updateVisit = async (req, res, next) => {
 
                 name: diagnosisList[i].name,
                 allergy: false,
+                status:diagnosisList[i].status,
                 dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
                 dateOfHealing: diagnosisList[i].dateOfHealing,
                 diagnosis: diagnosisList[i]._id,

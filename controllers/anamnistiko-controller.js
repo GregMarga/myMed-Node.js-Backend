@@ -37,7 +37,7 @@ const getAnamnstiko = async (req, res, next) => {
         return next(new HttpError('Απέτυχε η ανάκτηση του ιστορικού,παρακαλώ προσπαθήστε ξανά.', 500));
     }
     console.log('anamnistiko id:', patient.anamnistiko)
-    if (!patient.anamnistiko) {
+    if (!patient.anamnistiko) { ////////////////////////////
         console.log('in')
         return res.json()
     }
@@ -226,6 +226,7 @@ const createAnamnistiko = async (req, res, next) => {
             _id: conditions[i]._id,
             name: conditions[i].name,
             allergy: false,
+            status:conditions[i].status,
             dateOfDiagnosis: conditions[i].dateOfDiagnosis,
             dateOfHealing: conditions[i].dateOfHealing,
             atomiko: atomikoId,
@@ -612,6 +613,7 @@ const updateAnamnistiko = async (req, res, next) => {
             _id: conditions[i]._id,
             name: conditions[i].name,
             allergy: false,
+            status:conditions[i].status,
             dateOfDiagnosis: conditions[i].dateOfDiagnosis,
             dateOfHealing: conditions[i].dateOfHealing,
             atomiko: atomikoId,

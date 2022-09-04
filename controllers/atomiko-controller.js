@@ -306,6 +306,33 @@ const deleteConditionsbyId = async (req, res, next) => {
     res.json({ conditionsList: condition });
 
 }
+const updateConditionsbyId = async (req, res, next) => {
+    const conditionId = req.params.conditionId;
+    const {status,dateOfDiagnosis,dateOfHealing}=req.body;
+   
+    let condition;
+    try {
+        condition = await Condition.findById(conditionId)
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Αποτυχία ενημέρωσης πάθησης.', 500))
+    }
+    condition.status=status;
+    condition.dateOfDiagnosis=dateOfDiagnosis;
+    condition.dateOfHealing=dateOfHealing;
+    try{
+        await condition.save()
+    }catch(err){
+        console.log(err)
+        return next(new HttpError('Αποτυχία ενημέρωσης πάθησης.', 500))
+    }
+
+
+    
+
+    res.json({ conditionsList: condition });
+
+}
 
 exports.getId = getId;
 exports.createConditionAtomiko = createConditionAtomiko;
@@ -313,3 +340,4 @@ exports.deleteConditionsbyId = deleteConditionsbyId;
 exports.getConditionsbyPatientId = getConditionsbyPatientId;
 exports.getAllergiesbyPatientId = getAllergiesbyPatientId;
 exports.getKlironomikobyPatientId = getKlironomikobyPatientId;
+exports.updateConditionsbyId=updateConditionsbyId;

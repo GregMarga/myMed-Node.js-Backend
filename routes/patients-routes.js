@@ -20,6 +20,7 @@ const farmakaController = require('../controllers/farmaka-controller');
 const farmakoController = require('../controllers/farmako-controller');
 const conditionsController = require('../controllers/conditions-controller');
 const atomikoController = require('../controllers/atomiko-controller');
+const gynaikologikoController=require('../controllers/gynaikologiko-controller');
 
 const router = express.Router();
 
@@ -97,6 +98,10 @@ router.get('/:pid/klironomiko', atomikoController.getKlironomikobyPatientId);
 router.get('/:pid/conditions/id', atomikoController.getId);
 
 router.delete('/:pid/conditions/:conditionId', atomikoController.deleteConditionsbyId);
+
+router.patch('/:pid/conditions/:conditionId', atomikoController.updateConditionsbyId);
+
+router.get('/:pid/gynaikologiko', gynaikologikoController.getGynaikologikobyPatientId);
 
 router.get('/:pid/visits/:visitId', visitControllers.getVisit);
 
