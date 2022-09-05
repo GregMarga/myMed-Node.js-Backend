@@ -13,6 +13,7 @@ const bloodLabTestControllers = require('../controllers/bloodTest-controller');
 const parathyroLabTestControllers = require('../controllers/parathyro-controller');
 const checkAuth = require('../middleware/check-auth');
 const fileUpload = require('../middleware/file-upload');
+const statsController=require('../controllers/stats-controller');
 const examsUpload = require('../middleware/exams-upload');
 const examsController = require('../controllers/exams-controller');
 const fileController = require('../controllers/file-controller');
@@ -135,6 +136,10 @@ router.post('/:pid/lab_tests', labTestControllers.createLabTest);
 
 
 router.get('/:pid/exams',  examsController.getFiles)
+
+router.get('/:pid/statistics/biometrics',statsController.getBiometrics);
+
+router.get('/:pid/statistics/ozoi',statsController.getOzosStat)
 // router.get('/:pid/files', fileController.getFiles);
 
 // router.delete('/:pid/files/:fileId', fileController.deleteFile);

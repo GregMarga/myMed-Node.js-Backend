@@ -59,6 +59,7 @@ const getVisit = async (req, res, next) => {
 
         let enhancedOzos = {
             _id: mongoose.Types.ObjectId(),
+            identifier: ozos[i].identifier,
             name: ozos[i].name,
             length: ozos[i].length,
             height: ozos[i].height,
@@ -204,6 +205,7 @@ const createVisit = async (req, res, next) => {
         const createdOzos = new Ozos({
             _id: ozosList[i]._id,
             name: ozosList[i].name,
+            identifier: ozosList[i].identifier,
             depth: ozosList[i].depth,
             length: ozosList[i].length,
             height: ozosList[i].height,
@@ -268,7 +270,7 @@ const createVisit = async (req, res, next) => {
 
                 name: diagnosisList[i].name,
                 allergy: false,
-                status:diagnosisList[i].status,
+                status: diagnosisList[i].status,
                 dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
                 dateOfHealing: diagnosisList[i].dateOfHealing,
                 diagnosis: diagnosisList[i]._id,
@@ -500,9 +502,11 @@ const updateVisit = async (req, res, next) => {
 
 
     for (let i = 0; i < ozosList.length; i++) {
+        console.log(ozosList[i])
         const createdOzos = new Ozos({
             _id: ozosList[i]._id,
             name: ozosList[i].name,
+            identifier: ozosList[i].identifier,
             depth: ozosList[i].depth,
             length: ozosList[i].length,
             height: ozosList[i].height,
@@ -567,7 +571,7 @@ const updateVisit = async (req, res, next) => {
 
                 name: diagnosisList[i].name,
                 allergy: false,
-                status:diagnosisList[i].status,
+                status: diagnosisList[i].status,
                 dateOfDiagnosis: diagnosisList[i].dateOfDiagnosis,
                 dateOfHealing: diagnosisList[i].dateOfHealing,
                 diagnosis: diagnosisList[i]._id,
