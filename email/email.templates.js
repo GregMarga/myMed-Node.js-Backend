@@ -8,11 +8,13 @@
 module.exports = {
 
   confirm: id => ({
-    subject: 'React Confirm Email',
+    subject: 'myMed Επιβεβαίωση Λογαριασμού',
     html: `
+      <div>Για να επιβεβαίωσετε τον λογαριασμό σας πατήστε τον παρακάτω σύνδεσμο.</div>
       <a href='http://localhost:3000/${id}/emailconfirmation'>
-        click to confirm email
+        πατήστε για να επιβεβαιώσετε το email
       </a>
+      <div>Μην μοιραστείτε αυτό τον σύνδεσμο με κανέναν.</div>
     `,      
     text: `Copy and paste this link:'http://localhost:3000/${id}/emailconfirmation'`
   })
