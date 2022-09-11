@@ -8,11 +8,8 @@ const gynaikologikoSchema = Schema({
     cycle_duration: { type: Number, required: false },
     period_duration: { type: Number, required: false },
     emminopausi: { type: Number, required: false },
-    adk:{type:Boolean,required:false},
-    tdk:{type:Boolean,required:false},
 
-    maieutiko: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Maieutiko' }],
-    anamnistiko: { type: mongoose.Types.ObjectId, required: true, ref: 'Anamnistiko' }
+    patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' }
 
 })
 

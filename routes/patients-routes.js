@@ -13,7 +13,7 @@ const bloodLabTestControllers = require('../controllers/bloodTest-controller');
 const parathyroLabTestControllers = require('../controllers/parathyro-controller');
 const checkAuth = require('../middleware/check-auth');
 const fileUpload = require('../middleware/file-upload');
-const statsController=require('../controllers/stats-controller');
+const statsController = require('../controllers/stats-controller');
 const examsUpload = require('../middleware/exams-upload');
 const examsController = require('../controllers/exams-controller');
 const fileController = require('../controllers/file-controller');
@@ -21,7 +21,7 @@ const farmakaController = require('../controllers/farmaka-controller');
 const farmakoController = require('../controllers/farmako-controller');
 const conditionsController = require('../controllers/conditions-controller');
 const atomikoController = require('../controllers/atomiko-controller');
-const gynaikologikoController=require('../controllers/gynaikologiko-controller');
+const gynaikologikoController = require('../controllers/gynaikologiko-controller');
 
 const router = express.Router();
 
@@ -67,16 +67,55 @@ router.patch('/:pid/basic',
     validateRequestSchema,
     basicsControllers.updateBasics);
 
+router.get('/:pid/anamnistiko/conditions', anaminstikoControllers.getConditions);
 
-router.get('/:pid/anamnistiko/:gender', anaminstikoControllers.getAnamnstiko);
+router.post('/:pid/anamnistiko/condition', anaminstikoControllers.createAtomikoCondition);
 
-router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
+router.delete('/:pid/anamnistiko/condition/:conditionId', anaminstikoControllers.removeCondition);
 
-router.patch('/:pid/anamnistiko', anaminstikoControllers.updateAnamnistiko);
+router.get('/:pid/anamnistiko/allergies', anaminstikoControllers.getAllergies);
+
+router.post('/:pid/anamnistiko/allergies', anaminstikoControllers.createAtomikoAllergies);
+
+router.delete('/:pid/anamnistiko/allergies/:allergyId', anaminstikoControllers.removeAtomikoAllergy);
+
+router.get('/:pid/anamnistiko/klironomiko', anaminstikoControllers.getKlironomiko);
+
+router.post('/:pid/anamnistiko/klironomiko', anaminstikoControllers.createKlironomiko);
+
+router.delete('/:pid/anamnistiko/klironomiko/:klironomikoId', anaminstikoControllers.removeKlironomikoCondition);
+
+router.post('/:pid/anamnistiko/surgery', anaminstikoControllers.createSurgery);
+
+router.get('/:pid/anamnistiko/surgeries', anaminstikoControllers.getSurgeries);
+
+router.patch('/:pid/anamnistiko/surgery/:surgeryId', anaminstikoControllers.updateSurgery);
+
+router.delete('/:pid/surgery/:surgeryId', anaminstikoControllers.removeSurgery);
+
+router.get('/:pid/anamnistiko/gynaikologiko/', anaminstikoControllers.getGynaikologiko);
+
+router.post('/:pid/anamnistiko/gynaikologiko/', anaminstikoControllers.createGynaikologiko);
+
+router.patch('/:pid/anamnistiko/gynaikologiko/', anaminstikoControllers.updateGynaikologiko);
+
+router.get('/:pid/anamnistiko/gynaikologiko/pregnacies', anaminstikoControllers.getPregnacies);
+
+router.post('/:pid/anamnistiko/gynaikologiko/pregnacy', anaminstikoControllers.createPregnacy);
+
+router.delete('/:pid/anamnistiko/gynaikologiko/pregnacy/:pregnacyId', anaminstikoControllers.removePregnacy);
+
+// router.get('/:pid/anamnistiko/:gender', anaminstikoControllers.getAnamnstiko);
+
+// router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
+
+// router.patch('/:pid/anamnistiko', anaminstikoControllers.updateAnamnistiko);
 
 router.get('/:pid/farmaka', farmakaController.getFarmakabyPatientId);
 
 router.post('/:pid/farmaka', farmakaController.createFarmako);
+
+router.patch('/:pid/farmaka/:farmakoId', farmakaController.updateFarmako);
 
 router.delete('/:pid/farmaka/:farmakoId', farmakaController.deleteFarmako);
 
@@ -90,7 +129,7 @@ router.get('/:pid/conditions/name/:name', conditionsController.conditionHits);
 
 router.get('/:pid/conditions', atomikoController.getConditionsbyPatientId);
 
-router.post('/:pid/conditions', atomikoController.createConditionAtomiko);
+// router.post('/:pid/conditions', atomikoController.createConditionAtomiko);
 
 router.get('/:pid/allergies', atomikoController.getAllergiesbyPatientId);
 
@@ -104,7 +143,9 @@ router.patch('/:pid/conditions/:conditionId', atomikoController.updateConditions
 
 router.get('/:pid/gynaikologiko', gynaikologikoController.getGynaikologikobyPatientId);
 
-router.get('/:pid/visits/:visitId', visitControllers.getVisit);
+router.get('/:pid/visits/:visitId', visitControllers.getAntikeimeniki);
+
+router.patch('/:pid/visits/:visitId/antikeimeniki', visitControllers.updateAntikeimeniki);
 
 router.get('/:pid/visits', visitControllers.getAllVisits);
 
@@ -114,32 +155,39 @@ router.get('/:pid/visits', visitControllers.getAllVisits);
 
 // router.get('/visits/createVisitId', visitControllers.createVisitId);
 
-router.patch('/:pid/visits/:visitId', visitControllers.updateVisit);
+// router.patch('/:pid/visits/:visitId', visitControllers.updateVisit);
 
 // router.delete('/:pid/visits/:vid', visitControllers.deleteVisit);
 
-router.post('/:pid/visits', visitControllers.createVisit);
+router.post('/:pid/visit/antikeimeniki', visitControllers.createAntikeimeniki);
 
-router.get('/:pid/lab_tests', labTestControllers.getLabTests);
+router.get('/:pid/visit/:visitId/ozos', visitControllers.getOzos);
 
-router.delete('/:pid/lab_tests/blood/:labId', bloodLabTestControllers.deleteBloodLabTest);
+router.post('/:pid/visit/:visitId/ozos', visitControllers.createOzos);
 
-router.delete('/:pid/lab_tests/parathyro/:labId', parathyroLabTestControllers.deleteParathyroLabTest);
+router.patch('/:pid/visit/:visitId/ozos/:ozosId', visitControllers.updateOzos);
 
-router.get('/:pid/lab_tests/blood/:labId', bloodLabTestControllers.getBloodTests);
+router.delete('/:pid/visit/:visitId/ozos/:ozosId', visitControllers.removeOzos);
 
-router.get('/:pid/lab_tests/parathyro/:labId', parathyroLabTestControllers.getParathyrodTests);
+router.get('/:pid/visit/:visitId/diagnosis', visitControllers.getDiagnosis);
 
-router.patch('/:pid/lab_tests/:labId', labTestControllers.updateLabTest);
+router.post('/:pid/visit/:visitId/diagnosis', visitControllers.createDiagnosis);
 
-router.post('/:pid/lab_tests', labTestControllers.createLabTest);
+router.patch('/:pid/visit/:visitId/diagnosis/:diagnosisId', visitControllers.updateDiagnosis);
 
+router.delete('/:pid/visit/:visitId/diagnosis/:diagnosisId', visitControllers.removeDiagnosis);
 
-router.get('/:pid/exams',  examsController.getFiles)
+router.get('/:pid/visit/:visitId/therapeia', visitControllers.getTherapeia);
 
-router.get('/:pid/statistics/biometrics',statsController.getBiometrics);
+router.post('/:pid/visit/:visitId/therapeia', visitControllers.createTherapeia);
 
-router.get('/:pid/statistics/ozoi',statsController.getOzosStat)
+router.delete('/:pid/visit/:visitId/therapeia/:therapeiaId', visitControllers.removeTherapeia);
+
+router.get('/:pid/exams', examsController.getFiles)
+
+router.get('/:pid/statistics/biometrics', statsController.getBiometrics);
+
+router.get('/:pid/statistics/ozoi', statsController.getOzosStat)
 // router.get('/:pid/files', fileController.getFiles);
 
 // router.delete('/:pid/files/:fileId', fileController.deleteFile);

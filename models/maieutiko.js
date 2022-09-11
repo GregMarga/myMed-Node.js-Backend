@@ -9,7 +9,7 @@ const maieutikoSchema = Schema({
     comments: { type: String, required: false },
    
 
-    gynaikologiko: { type: mongoose.Types.ObjectId, required: true, ref: 'Gynaikologiko' },
+    patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' },
     
 
 })

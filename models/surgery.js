@@ -8,7 +8,7 @@ const surgerySchema = Schema({
     dateOfExit: { type: Date, required: false },    
     hospital: { type: String, required: false },
 
-    anamnistiko: { type: mongoose.Types.ObjectId, required: true, ref: 'Anamnistiko' },
+   
     patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' }
 
 })

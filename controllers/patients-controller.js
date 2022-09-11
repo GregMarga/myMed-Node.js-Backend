@@ -18,7 +18,7 @@ const getAllpatients = async (req, res, next) => {
             // 'age':{$regex:'', '$options' : 'xi'},
             'tel': { $regex: `${q.tel}`, '$options': 'xi' },
             'amka': { $regex: `${q.amka}`, '$options': 'xi' },
-        });
+        }).sort('-date');
     } catch (err) {
         console.log(err)
         return next(new HttpError('Fetching patients failed,please try again later.', 500));

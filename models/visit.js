@@ -16,7 +16,7 @@ const visitSchmema = Schema({
 
     patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' },
     ozos: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Ozos' }],
-    diagnosis: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Diagnosis' }],
+    conditions: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Conditions' }],
     therapeia: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Therapeia' }]
 });
 

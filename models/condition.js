@@ -9,9 +9,10 @@ const conditionSchema = Schema({
     dateOfDiagnosis: { type: Date, required: false },
     dateOfHealing: { type: Date, required: false },
     cleronomical: { type: Boolean, required: false },
-    atomiko: { type: mongoose.Types.ObjectId, required: false, ref: 'Atomiko' },
-    klironomiko: { type: mongoose.Types.ObjectId, required: false, ref: 'Klironomiko' },
-    diagnosis: { type: mongoose.Types.ObjectId, required: false, ref: 'Diagnosis' },
+    atomiko: { type: Boolean, required: false },
+    diagnosis: { type: Boolean, required: false },
+
+    visit: { type: mongoose.Types.ObjectId, required: false, ref: 'Visit' },
     patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' },
 
 

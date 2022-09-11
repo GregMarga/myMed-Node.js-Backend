@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ozosSchmema = Schema({
-    name: { type: String, required: false },
+    name: { type: String, required: true },
     length: { type: Number, required: false },
-    identifier:{type:String,required:true},
+    
     height: { type: Number, required: false },
     depth: { type: Number, required: false },
     dateOfFinding: { type: Date, required: false },

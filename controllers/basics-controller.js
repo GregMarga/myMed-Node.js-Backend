@@ -49,7 +49,10 @@ const createImageBasics = async (req, res, next) => {
             basic: null,
             anamnistiko: null,
             files: file,
-            visits: []
+            visits: [],
+            pregnacies: [],
+            conditions: [],
+            farmako: []
         });
         let doctor;
         try {
