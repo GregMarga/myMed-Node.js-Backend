@@ -3,10 +3,10 @@ const HttpError = require('../models/http-error');
 const Patient = require('../models/patient');
 const Visit = require('../models/visit');
 const Farmako = require('../models/farmako');
-const Diagnosis = require('../models/diagnosis');
 const Ozos = require('../models/ozos')
 const Condition = require('../models/condition');
 const Therapeia = require('../models/therapeia');
+
 
 
 const getAllVisits = async (req, res, next) => {
@@ -137,12 +137,13 @@ const createAntikeimeniki = async (req, res, next) => {
         tekt,
         smkt,
         test_volume,
+        conditions: [],
         patient: patientId
     })
 
     if (visitId === 'new' && patient.visits.length > 0) {
         let visit;
-        let ozoi = [],conditions=[],therapeias=[];
+        let ozoi = [], conditions = [], therapeias = [];
         try {
             visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
         } catch (err) {
@@ -188,23 +189,12 @@ const createAntikeimeniki = async (req, res, next) => {
             console.log(err)
             return next(new HttpError('Η φόρτωση της λίστας των όζων απέτυχε.', 500));
         }
-        for (let i = 0; i < conditions.length; i++){
-            const createdDiagnosis = new Condition({
-                name:conditions[i].name,
-                allergy: false,
-                status:conditions[i].status,
-                dateOfDiagnosis:conditions[i].dateOfDiagnosis,
-                dateOfHealing:conditions[i].dateOfHealing,
-                atomiko: false,
-                cleronomical: false,
-                diagnosis: true,
-        
-                patient: patientId,
-                visit: _id
-            })
+        for (let i = 0; i < conditions.length; i++) {
+
+            conditions[i].visit.push(_id)
             try {
-                await createdDiagnosis.save();
-                createdVisit.conditions.push(createdDiagnosis)
+                await conditions[i].save();
+                createdVisit.conditions.push(conditions[i])
             } catch (err) {
                 console.log(err)
                 const error = new HttpError('Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500);
@@ -219,39 +209,36 @@ const createAntikeimeniki = async (req, res, next) => {
             console.log(err)
             return next(new HttpError('Η φόρτωση της λίστας των όζων απέτυχε.', 500));
         }
-        for (let i = 0; i < therapeias.length; i++){
-            // const createdFarmako = new Farmako({
-            //     name: name,
-            //     ATC_name: ATC_name,
-            //     therapeia: _id,
-            //     patient: patientId
-            // })
-        
-            // try {
-            //     const sess = await mongoose.startSession();
-            //     sess.startTransaction();
-            //     await createdFarmako.save({ session: sess });
-            //     createdTherapeia.farmako = createdFarmako;
-            //     visit.therapeia.push(createdTherapeia);
-            //     await createdTherapeia.save({ session: sess });
-            //     await visit.save({ session: sess });
-            //     await sess.commitTransaction();
-            // } catch (err) {
-            //     console.log(err)
-            //     return next(new HttpError('Η δημιουργία της θεραπείας απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
-            // }
-            const createdTherapeia = new Therapeia({                
-                condition:therapeias[i].condition,
-                posotita:therapeias[i].posotita,
-                syxnotita:therapeias[i].syxnotita,
-                duration:therapeias[i].duration,
+
+
+        for (let i = 0; i < therapeias.length; i++) {
+            let farmako
+            try {
+                farmako = await Farmako.findById(therapeias[i].farmako);
+            } catch (err) {
+                console.log(err)
+                return next(new HttpError('Η φόρτωση της λίστας των όζων απέτυχε.', 500));
+            }
+
+            const createdTherapeia = new Therapeia({
+                condition: therapeias[i].condition,
+                posotita: therapeias[i].posotita,
+                syxnotita: therapeias[i].syxnotita,
+                duration: therapeias[i].duration,
                 patient: patientId,
+                farmako: farmako,
 
                 visit: _id
             })
+
             try {
-                await createdTherapeia.save();
+                const sess = await mongoose.startSession();
+                sess.startTransaction();
+                farmako.therapeia.push(createdTherapeia)
+                await farmako.save({ session: sess })
+                await createdTherapeia.save({ session: sess });
                 createdVisit.therapeia.push(createdTherapeia)
+                await sess.commitTransaction();
             } catch (err) {
                 console.log(err)
                 const error = new HttpError('Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500);
@@ -474,7 +461,7 @@ const getDiagnosis = async (req, res, next) => {
     const visitId = req.params.visitId;
     let visit, diagnosis;
     try {
-        visit = await Visit.findById(visitId);
+        visit = await Visit.findById(visitId).populate('conditions');
     } catch (err) {
         console.log(err)
         return next(new HttpError('Η φόρτωση των διαγνώσεων απέτυχε.', 500));
@@ -483,13 +470,7 @@ const getDiagnosis = async (req, res, next) => {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένη επίσκεψη.', 404));
     }
 
-    try {
-        diagnosis = await Condition.find({ visit: visitId });
-    } catch (err) {
-        console.log(err)
-        return next(new HttpError('Η φόρτωση των διαγνώσεων απέτυχε απέτυχε.', 500));
-    }
-    res.json(diagnosis)
+    res.json(visit.conditions)
 
 
 }
@@ -537,7 +518,7 @@ const createDiagnosis = async (req, res, next) => {
         diagnosis: true,
 
         patient: patientId,
-        visit: visitId
+        visit: [visitId]
     })
 
     try {
@@ -621,7 +602,12 @@ const removeDiagnosis = async (req, res, next) => {
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
-        await condition.deleteOne({ session: sess });
+        condition.visit.pull(visit)
+        if (condition.visit.length > 0) {
+            await condition.save({ session: sess });
+        } else {
+            await condition.deleteOne({ session: sess });
+        }
         patient.conditions.pull(condition);
         visit.conditions.pull(condition);
         await patient.save({ session: sess });
@@ -685,7 +671,7 @@ const createTherapeia = async (req, res, next) => {
     }
 
     try {
-        patient = await Patient.findById(patientId);
+        patient = await Patient.findById(patientId).populate('visits');
     } catch (err) {
         console.log(err)
         return next(new HttpError('Η δημιουργία της θεραπείας απέτυχε.', 500));
@@ -716,7 +702,7 @@ const createTherapeia = async (req, res, next) => {
     const createdFarmako = new Farmako({
         name: name,
         ATC_name: ATC_name,
-        therapeia: _id,
+        therapeia: [_id],
         patient: patientId
     })
 
@@ -763,6 +749,8 @@ const removeTherapeia = async (req, res, next) => {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένη επίσκεψη.', 404));
     }
 
+
+    console.log(therapeiaId)
     try {
         therapeia = await Therapeia.findById(therapeiaId);
     } catch (err) {
@@ -782,7 +770,12 @@ const removeTherapeia = async (req, res, next) => {
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
-        await farmako.deleteOne({ session: sess });
+        farmako.therapeia.pull(therapeia)
+        if (farmako.therapeia.length > 0) {
+            await farmako.save({ session: sess });
+        } else {
+            await farmako.deleteOne({ session: sess });
+        }
         await therapeia.deleteOne({ session: sess });
         visit.therapeia.pull(therapeia);
         patient.farmako.pull(farmako);

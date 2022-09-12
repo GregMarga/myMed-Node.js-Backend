@@ -8,7 +8,7 @@ const farmakoSchema = Schema({
     dateOfStart: { type: Date, required: false },
     dateOfEnd: { type: Date, required: false },
     patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' },
-    therapeia:{ type: mongoose.Types.ObjectId, required: false, ref: 'Therapeia'}
+    therapeia:[{ type: mongoose.Types.ObjectId, required: false, ref: 'Therapeia'}]
 
 
 

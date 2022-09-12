@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const HttpError = require('../models/http-error');
 const Patient = require('../models/patient');
 const Farmako = require("../models/farmako");
-
-
+const Therapeia = require('../models/therapeia');
+const Visit = require('../models/visit');
 
 
 
@@ -94,7 +94,7 @@ const deleteFarmako = async (req, res, next) => {
     const patientId = req.params.pid;
     const farmakoId = req.params.farmakoId;
 
-    let farmako;
+    let farmako,therapeia,visit;
 
     try {
         farmako = await Farmako.findById(farmakoId).populate('patient');
@@ -102,19 +102,35 @@ const deleteFarmako = async (req, res, next) => {
         console.log(err)
         return next(new HttpError('Δεν βρέθηκε η φαρμακευτική αγωγή προς διαγραφή.', 500));
     }
-
+    for (let i = 0; i < farmako.therapeia.length; i++) {
+        try {
+            therapeia = await Therapeia.findById(farmako.therapeia[i]).populate('visit');
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Δεν βρέθηκε η φαρμακευτική αγωγή προς διαγραφή.', 500));
+        }
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            therapeia.deleteOne({ session: sess })
+            therapeia.visit.therapeia.pull(therapeia);
+            await therapeia.visit.save({ session: sess });
+            await sess.commitTransaction();
+    
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError('Αποτυχία διαγραφής φαρμακευτικής αγωγής,προσπαθήστε ξανά.', 500);
+            return next(error);
+        };
+    }
 
     try {
-
         const sess = await mongoose.startSession();
         sess.startTransaction();
         await farmako.remove({ session: sess });
         farmako.patient.farmako.pull(farmako);
-
         await farmako.patient.save({ session: sess });
-
         await sess.commitTransaction();
-
 
     } catch (err) {
         console.log(err)
