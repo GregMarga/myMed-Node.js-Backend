@@ -143,11 +143,15 @@ router.patch('/:pid/conditions/:conditionId', atomikoController.updateConditions
 
 router.get('/:pid/gynaikologiko', gynaikologikoController.getGynaikologikobyPatientId);
 
+router.get('/:pid/visits/oldAntikeimeniki', visitControllers.getOldAntikeimeniki);
+
 router.get('/:pid/visits/:visitId', visitControllers.getAntikeimeniki);
 
 router.patch('/:pid/visits/:visitId/antikeimeniki', visitControllers.updateAntikeimeniki);
 
 router.get('/:pid/visits', visitControllers.getAllVisits);
+
+// router.get('/:pid/visits/info', visitControllers.getVisitsInfo);
 
 // router.get('/:pid/visits.dates', visitControllers.getPatientVisitDates);
 
@@ -159,7 +163,7 @@ router.get('/:pid/visits', visitControllers.getAllVisits);
 
 // router.delete('/:pid/visits/:vid', visitControllers.deleteVisit);
 
-router.post('/:pid/visit/antikeimeniki', visitControllers.createAntikeimeniki);
+router.post('/:pid/visit/:visitId/antikeimeniki', visitControllers.createAntikeimeniki);
 
 router.get('/:pid/visit/:visitId/ozos', visitControllers.getOzos);
 

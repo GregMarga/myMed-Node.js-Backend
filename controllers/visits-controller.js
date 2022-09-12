@@ -31,11 +31,37 @@ const getAllVisits = async (req, res, next) => {
     res.json(visits)
 }
 
+const getVisitsInfo = async (req, res, next) => {
+    const patientId = req.params.pid;
+    let patient, visit;
+
+    let hasConditions, hasTherapeias;
+    try {
+        patient = await Patient.findById(patientId);
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
+    }
+
+    try {
+        visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
+    }
+    hasConditions = (visit.conditions.length > 0) ? true : false;
+    hasTherapeias = (visit.therapeia.length > 0) ? true : false;
+
+
+    res.json({ hasConditions, hasTherapeias })
+}
+
 
 const getAntikeimeniki = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId;
     let patient, visit;
+
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {
@@ -49,18 +75,50 @@ const getAntikeimeniki = async (req, res, next) => {
         visit = await Visit.findById(visitId);
     } catch (err) {
         console.log(err)
-        return next(new HttpError('Η δημιουργία της αντικειμενικής εξέτασης απέτυχε.', 500));
+        return next(new HttpError('Η φόρτωση της αντικειμενικής εξέτασης απέτυχε.', 500));
     }
     if (!visit) {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένη επίσκεψη.', 404));
     }
     res.json(visit)
 }
+
+const getOldAntikeimeniki = async (req, res, next) => {
+    const patientId = req.params.pid;
+    let patient, visit, height;
+
+    console.log('patientId:', patientId)
+    console.log('in')
+    try {
+        patient = await Patient.findById(patientId);
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η φόρτωση της αντικειμενικής εξέτασης απέτυχε.', 500));
+    }
+    if (!patient) {
+        return next(new HttpError('Δεν υπάρχει καταγεγραμμένος ο συγκεκριμένος ασθενής.', 404));
+    }
+    try {
+        visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η φόρτωση της αντικειμενικής εξέτασης απέτυχε.', 500));
+    }
+
+
+    height = (!!visit) ? visit.height : null;
+
+    res.json(height)
+}
+
+
 const createAntikeimeniki = async (req, res, next) => {
     const patientId = req.params.pid;
+    const visitId = req.params.visitId;
     const { date, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
 
     let patient;
+    let _id = mongoose.Types.ObjectId();
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {
@@ -71,6 +129,7 @@ const createAntikeimeniki = async (req, res, next) => {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένος ο συγκεκριμένος ασθενής.', 404));
     }
     const createdVisit = new Visit({
+        _id,
         date,
         geniki_eikona,
         aitia_proseleusis, piesi, weight,
@@ -80,20 +139,159 @@ const createAntikeimeniki = async (req, res, next) => {
         test_volume,
         patient: patientId
     })
-    try {
-        const sess = await mongoose.startSession();
-        sess.startTransaction();
-        await createdVisit.save({ session: sess });
-        patient.visits.push(createdVisit);
-        await patient.save({ session: sess });
-        await sess.commitTransaction();
-    } catch (err) {
-        console.log(err)
-        const error = new HttpError(
-            'Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.',
-            500
-        );
-        return next(error);
+
+    if (visitId === 'new' && patient.visits.length > 0) {
+        let visit;
+        let ozoi = [],conditions=[],therapeias=[];
+        try {
+            visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η φόρτωση της λίστας των όζων απέτυχε.', 500));
+        }
+        if (!visit) {
+            return next(new HttpError('Δεν υπάρχει καταγεγραμμένη επίσκεψη.', 404));
+        }
+
+        try {
+            ozoi = await Ozos.find({ visit: visit._id });
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η φόρτωση της λίστας των όζων απέτυχε.', 500));
+        }
+        for (let i = 0; i < ozoi.length; i++) {
+            // createdVisit.ozos.push(ozoi[i])
+            const createdOzos = new Ozos({
+                name: ozoi[i].name,
+                length: ozoi[i].length,
+                height: ozoi[i].height,
+                depth: ozoi[i].depth,
+                dateOfFinding: ozoi[i].dateOfFinding,
+
+                visit: _id
+            })
+            try {
+                await createdOzos.save();
+                createdVisit.ozos.push(createdOzos)
+            } catch (err) {
+                console.log(err)
+                const error = new HttpError('Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500);
+                return next(error);
+            }
+
+
+        }
+
+        try {
+            conditions = await Condition.find({ visit: visit._id });
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η φόρτωση της λίστας των όζων απέτυχε.', 500));
+        }
+        for (let i = 0; i < conditions.length; i++){
+            const createdDiagnosis = new Condition({
+                name:conditions[i].name,
+                allergy: false,
+                status:conditions[i].status,
+                dateOfDiagnosis:conditions[i].dateOfDiagnosis,
+                dateOfHealing:conditions[i].dateOfHealing,
+                atomiko: false,
+                cleronomical: false,
+                diagnosis: true,
+        
+                patient: patientId,
+                visit: _id
+            })
+            try {
+                await createdDiagnosis.save();
+                createdVisit.conditions.push(createdDiagnosis)
+            } catch (err) {
+                console.log(err)
+                const error = new HttpError('Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500);
+                return next(error);
+            }
+
+        }
+
+        try {
+            therapeias = await Therapeia.find({ visit: visit._id });
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η φόρτωση της λίστας των όζων απέτυχε.', 500));
+        }
+        for (let i = 0; i < therapeias.length; i++){
+            // const createdFarmako = new Farmako({
+            //     name: name,
+            //     ATC_name: ATC_name,
+            //     therapeia: _id,
+            //     patient: patientId
+            // })
+        
+            // try {
+            //     const sess = await mongoose.startSession();
+            //     sess.startTransaction();
+            //     await createdFarmako.save({ session: sess });
+            //     createdTherapeia.farmako = createdFarmako;
+            //     visit.therapeia.push(createdTherapeia);
+            //     await createdTherapeia.save({ session: sess });
+            //     await visit.save({ session: sess });
+            //     await sess.commitTransaction();
+            // } catch (err) {
+            //     console.log(err)
+            //     return next(new HttpError('Η δημιουργία της θεραπείας απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
+            // }
+            const createdTherapeia = new Therapeia({                
+                condition:therapeias[i].condition,
+                posotita:therapeias[i].posotita,
+                syxnotita:therapeias[i].syxnotita,
+                duration:therapeias[i].duration,
+                patient: patientId,
+
+                visit: _id
+            })
+            try {
+                await createdTherapeia.save();
+                createdVisit.therapeia.push(createdTherapeia)
+            } catch (err) {
+                console.log(err)
+                const error = new HttpError('Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500);
+                return next(error);
+            }
+
+        }
+
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdVisit.save({ session: sess });
+            patient.visits.push(createdVisit);
+            await patient.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.',
+                500
+            );
+            return next(error);
+        }
+    }
+    else {
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await createdVisit.save({ session: sess });
+            patient.visits.push(createdVisit);
+            await patient.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            const error = new HttpError(
+                'Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.',
+                500
+            );
+            return next(error);
+        }
     }
 
     res.json(createdVisit)
@@ -172,6 +370,9 @@ const getOzos = async (req, res, next) => {
     res.json(ozoi)
 
 }
+
+
+
 const createOzos = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId;
@@ -179,11 +380,17 @@ const createOzos = async (req, res, next) => {
     const { name, length, height, depth, dateOfFinding, _id } = req.body;
 
     let visit;
+
+
+    if (visitId === 'null' || visitId === 'new') {
+        return next(new HttpError('Για την δημιουργία ενός νέου όζου, πρέπει πρώτα να δημιουργηθεί η αντικειμενική εξέταση', 404))
+    }
+
     try {
         visit = await Visit.findById(visitId);
     } catch (err) {
         console.log(err)
-        return next(new HttpError('Η επεξεργασία της αντικειμενικής εξέτασης απέτυχε.', 500));
+        return next(new HttpError('Η δημιουργία του όζου απέτυχε.', 500));
     }
     const createdOzos = new Ozos({
         _id, name, length, height, depth, dateOfFinding,
@@ -292,6 +499,12 @@ const createDiagnosis = async (req, res, next) => {
 
     const { _id, name, status, dateOfDiagnosis, dateOfHealing } = req.body;
     let patient, visit;
+
+    if (visitId === 'null') {
+        return next(new HttpError('Για την δημιουργία μιας διάγνωσης, πρέπει πρώτα να δημιουργηθεί η αντικειμενική εξέταση', 404))
+    }
+
+
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {
@@ -429,7 +642,7 @@ const getTherapeia = async (req, res, next) => {
         visit = await Visit.findById(visitId);
     } catch (err) {
         console.log(err)
-        return next(new HttpError('Η δημιουργία της θεραπείας απέτυχε.', 500));
+        return next(new HttpError('Η φόρτωση της θεραπείας απέτυχε.', 500));
     }
     if (!visit) {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένη επίσκεψη.', 404));
@@ -439,19 +652,20 @@ const getTherapeia = async (req, res, next) => {
             therapeia = await Therapeia.findById(visit.therapeia[i]);
         } catch (err) {
             console.log(err)
-            return next(new HttpError('Η δημιουργία της θεραπείας απέτυχε.', 500));
+            return next(new HttpError('Η φόρτωση της θεραπείας απέτυχε.', 500));
         }
         try {
             farmako = await Farmako.findOne({ therapeia: visit.therapeia[i] });
         } catch (err) {
             console.log(err)
-            return next(new HttpError('Η δημιουργία της θεραπείας απέτυχε.', 500));
+            return next(new HttpError('Η φόρτωση της θεραπείας απέτυχε.', 500));
         }
         let enhancedTherapeia = {
             _id: therapeia._id,
             condition: therapeia.condition,
             posotita: therapeia.posotita,
             syxnotita: therapeia.syxnotita,
+            duration: therapeia.duration,
             name: farmako.name,
             ATC_name: farmako.ATC_name
         }
@@ -463,8 +677,13 @@ const createTherapeia = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId
 
-    const { _id, condition, posotita, syxnotita, name, ATC_name } = req.body;
+    const { _id, condition, posotita, syxnotita, duration, name, ATC_name } = req.body;
     let patient, visit;
+
+    if (visitId === 'null') {
+        return next(new HttpError('Για την δημιουργία μιας νέας θεραπείας, πρέπει πρώτα να δημιουργηθεί η αντικειμενική εξέταση', 404))
+    }
+
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {
@@ -490,6 +709,7 @@ const createTherapeia = async (req, res, next) => {
         condition,
         posotita,
         syxnotita,
+        duration,
         patient: patientId,
         visit: visitId
     })
@@ -579,7 +799,9 @@ const removeTherapeia = async (req, res, next) => {
 
 
 exports.getAllVisits = getAllVisits;
+// exports.getVisitsInfo=getVisitsInfo
 exports.getAntikeimeniki = getAntikeimeniki;
+exports.getOldAntikeimeniki = getOldAntikeimeniki;
 exports.createAntikeimeniki = createAntikeimeniki;
 exports.updateAntikeimeniki = updateAntikeimeniki;
 exports.getOzos = getOzos;
