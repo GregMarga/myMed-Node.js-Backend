@@ -6,6 +6,7 @@ const Farmako = require('../models/farmako');
 const Ozos = require('../models/ozos')
 const Condition = require('../models/condition');
 const Therapeia = require('../models/therapeia');
+const Exam = require('../models/exams');
 
 
 
@@ -31,36 +32,38 @@ const getAllVisits = async (req, res, next) => {
     res.json(visits)
 }
 
-const getVisitsInfo = async (req, res, next) => {
-    const patientId = req.params.pid;
-    let patient, visit;
+// const getVisitsInfo = async (req, res, next) => {
+//     const patientId = req.params.pid;
+//     let patient, visit;
 
-    let hasConditions, hasTherapeias;
-    try {
-        patient = await Patient.findById(patientId);
-    } catch (err) {
-        console.log(err)
-        return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
-    }
+//     let hasConditions, hasTherapeias;
+//     try {
+//         patient = await Patient.findById(patientId);
+//     } catch (err) {
+//         console.log(err)
+//         return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
+//     }
 
-    try {
-        visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
-    } catch (err) {
-        console.log(err)
-        return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
-    }
-    hasConditions = (visit.conditions.length > 0) ? true : false;
-    hasTherapeias = (visit.therapeia.length > 0) ? true : false;
+//     try {
+//         visit = await Visit.findOne({ patient: patientId }).sort({ field: 'asc', _id: -1 });
+//     } catch (err) {
+//         console.log(err)
+//         return next(new HttpError('Η φόρτωση της λίστας των επισκέψεων απέτυχε.', 500));
+//     }
+//     hasConditions = (visit.conditions.length > 0) ? true : false;
+//     hasTherapeias = (visit.therapeia.length > 0) ? true : false;
 
 
-    res.json({ hasConditions, hasTherapeias })
-}
+//     res.json({ hasConditions, hasTherapeias })
+// }
 
 
 const getAntikeimeniki = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId;
-    let patient, visit;
+    let patient, visit, exam;
+    let filesList = [];
+
 
     try {
         patient = await Patient.findById(patientId);
@@ -80,7 +83,23 @@ const getAntikeimeniki = async (req, res, next) => {
     if (!visit) {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένη επίσκεψη.', 404));
     }
-    res.json(visit)
+
+    for (let i = 0; i < patient.exams.length; i++) {
+        try {
+            exam = await Exam.findById(patient.exams[i]);
+        } catch (err) {
+            return next(new HttpError('Η ανάσυρση των αρχείων απέτυχε.', 500));
+        }
+        let examDateTemp = new Date(exam.dateOfVisit);
+        let visitDateTemp = new Date(visit.date)
+
+        if (examDateTemp.getTime() === visitDateTemp.getTime()) {
+            filesList.push(exam)
+        }
+    }
+
+
+    res.json({ visit, filesList })
 }
 
 const getOldAntikeimeniki = async (req, res, next) => {
@@ -106,16 +125,17 @@ const getOldAntikeimeniki = async (req, res, next) => {
     }
 
 
+
     height = (!!visit) ? visit.height : null;
 
-    res.json(height)
+    res.json({ height })
 }
 
 
 const createAntikeimeniki = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId;
-    const { date, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
+    const { date, teleutaia_emminos_risi, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
 
     let patient;
     let _id = mongoose.Types.ObjectId();
@@ -131,6 +151,7 @@ const createAntikeimeniki = async (req, res, next) => {
     const createdVisit = new Visit({
         _id,
         date,
+        teleutaia_emminos_risi,
         geniki_eikona,
         aitia_proseleusis, piesi, weight,
         height, sfiksis,
@@ -169,6 +190,7 @@ const createAntikeimeniki = async (req, res, next) => {
                 depth: ozoi[i].depth,
                 dateOfFinding: ozoi[i].dateOfFinding,
 
+                patient: patientId,
                 visit: _id
             })
             try {
@@ -287,7 +309,7 @@ const updateAntikeimeniki = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId;
 
-    const { date, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
+    const { date, teleutaia_emminos_risi, geniki_eikona, aitia_proseleusis, piesi, weight, height, sfiksis, tekt, smkt, test_volume } = req.body;
 
     let patient;
     let visit
@@ -319,6 +341,7 @@ const updateAntikeimeniki = async (req, res, next) => {
     visit.tekt = tekt;
     visit.smkt = smkt;
     visit.test_volume = test_volume;
+    visit.teleutaia_emminos_risi = teleutaia_emminos_risi;
 
 
     try {
@@ -381,6 +404,7 @@ const createOzos = async (req, res, next) => {
     }
     const createdOzos = new Ozos({
         _id, name, length, height, depth, dateOfFinding,
+        patient: patientId,
 
         visit: visitId
     })

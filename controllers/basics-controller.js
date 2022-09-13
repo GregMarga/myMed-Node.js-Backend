@@ -91,7 +91,7 @@ const createBasics = async (req, res, next) => {
     let patient;
 
     try {
-        patient = await Patient.findOne({ amka: amka });
+        patient = await Patient.findOne({ amka: amka, doctor: uid });
     } catch (err) {
         return next(new HttpError('Κάτι πήγε λάθος,παρακαλώ προσπαθήστε ξανά.'));
     }

@@ -78,7 +78,7 @@ const getOzosStat = async (req, res, next) => {
 
 
             try {
-                sameOzosList = await Ozos.find({ name: ozos.name }).sort({ field: 'asc', _id: 1 });
+                sameOzosList = await Ozos.find({ name: ozos.name,patient:patientId }).sort({ field: 'asc', _id: 1 });
             } catch (err) {
                 console.log(err)
                 return next(new HttpError('Η φόρτωση της λίστας των όζων απέτυχε.', 500));

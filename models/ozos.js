@@ -10,6 +10,8 @@ const ozosSchmema = Schema({
     depth: { type: Number, required: false },
     dateOfFinding: { type: Date, required: false },
     condition: { type: mongoose.Types.ObjectId, required: false, ref: 'Condition' },
+
+    patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' },
     visit: { type: mongoose.Types.ObjectId, required: true, ref: 'Visit' },
 
 });

@@ -13,6 +13,7 @@ const visitSchmema = Schema({
     tekt: { type: Number, required: false, enum: [0, 1, 2, 3, 4, 5] },
     smkt: { type: Number, required: false, enum: [0, 1, 2, 3, 4, 5] },
     test_volume: { type: String, required: false },
+    teleutaia_emminos_risi: { type: Date, required: false },
 
     patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' },
     ozos: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Ozos' }],

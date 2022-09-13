@@ -196,11 +196,14 @@ const addAtomikoAllergy = async (req, res, next) => {
     res.json({ allergy: createdCondition })
 }
 
+
 const removeAtomikoAllergy = async (req, res, next) => {
     const patientId = req.params.pid;
     const allergyId = req.params.allergyId;
 
     let patient, condition;
+
+    console.log(patientId, allergyId)
     try {
         patient = await Patient.findById(patientId);
     } catch (err) {
@@ -215,6 +218,7 @@ const removeAtomikoAllergy = async (req, res, next) => {
     try {
         condition = await Condition.findById(allergyId);
     } catch (err) {
+        console.log(err)
         return next(new HttpError('Η διαγραφή της αλλεργίας απέτυχε.', 500));
     }
     if (!condition) {
@@ -346,8 +350,6 @@ const addKlironomiko = async (req, res, next) => {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένος ο συγκεκριμένος ασθενής.', 404));
     }
 
-
-
     const createdCondition = new Condition({
         _id,
         name,
@@ -373,6 +375,7 @@ const addKlironomiko = async (req, res, next) => {
         );
         return next(error);
     }
+    res.json(createdCondition)
 
 }
 
@@ -530,7 +533,7 @@ const updateGynaikologiko = async (req, res, next) => { ////////////////////////
     gynaikologiko.cycle_duration = cycle_duration
     gynaikologiko.period_duration = period_duration
     gynaikologiko.emminopausi = emminopausi
-    
+
 
 
     try {
@@ -723,6 +726,42 @@ const createPregnacy = async (req, res, next) => {
 }
 
 
+const updatePregnacy = async (req, res, next) => {
+    const pregnacyId = req.params.pregnacyId;
+
+
+    const { date_of_birth, gennisi, baby_weight, comments } = req.body;
+
+    let pregnacy;
+    try {
+        pregnacy = await Maieutiko.findById(pregnacyId);
+    } catch (err) {
+        return next(new HttpError('Η ενημερώση του μαιευτικού ιστορικού απέτυχε.', 500));
+    }
+    if (!pregnacy) {
+        return next(new HttpError('Δεν υπάρχει καταγεγραμμένο μαιευτικό ιστορικό.', 404));
+    }
+
+    pregnacy.date_of_birth=date_of_birth;
+    pregnacy.gennisi=gennisi;
+    pregnacy.baby_weight=baby_weight;
+    pregnacy.comments=comments;
+
+
+    try {
+        await pregnacy.save()
+    } catch (err) {
+        const error = new HttpError(
+            'Η ενημερώση του μαιευτικού ιστορικού απέτυχε, παρακαλώ προσπαθήστε ξανά.',
+            500
+        );
+        return next(error);
+    }
+
+    res.json(pregnacyId)
+}
+
+
 const removePregnacy = async (req, res, next) => {
     const patientId = req.params.pid;
     const pregnacyId = req.params.pregnacyId;
@@ -784,6 +823,7 @@ exports.removeSurgery = removeSurgery;
 exports.createGynaikologiko = createGynaikologiko;
 exports.updateGynaikologiko = updateGynaikologiko;
 exports.createPregnacy = createPregnacy;
+exports.updatePregnacy=updatePregnacy;
 exports.removePregnacy = removePregnacy;
 exports.removeCondition = removeCondition;
 // const createAnamnistiko = async (req, res, next) => {

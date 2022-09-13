@@ -32,11 +32,19 @@ router.post('/:pid/uploads/exams', examsUpload.single('exam'), examsController.s
 router.patch('/:pid/files/:fileId', fileUpload.single('image'), fileController.updateFile);
 
 router.post('/:pid/basic/image', fileUpload.single('image'),
-    body('amka').isLength({ min: 11, max: 11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
+    body('amka')
+        .isLength({ min: 11, max: 11 })
+        .withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.')
+        .matches('^[0-9]+$')
+        .withMessage('Το ΑΜΚΑ πρέπει να περιέχει μόνο αριθμούς.'),
     validateRequestSchema, basicsControllers.createImageBasics);
 
 router.patch('/:pid/basic/image', fileUpload.single('image'),
-    body('amka').isLength({ min: 11, max: 11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
+    body('amka')
+        .isLength({ min: 11, max: 11 })
+        .withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.')
+        .matches('^[0-9]+$')
+        .withMessage('Το ΑΜΚΑ πρέπει να περιέχει μόνο αριθμούς.'),
     validateRequestSchema,
     basicsControllers.updateImageBasics);
 
@@ -59,11 +67,22 @@ router.delete('/:pid', patientControllers.deletePatient);
 router.get('/:pid/basic', basicsControllers.getBasics);
 
 
-router.post('/:pid/basic', basicsControllers.createBasics);
+router.post('/:pid/basic',
+    body('amka')
+        .isLength({ min: 11, max: 11 }).
+        withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.')
+        .matches('^[0-9]+$')
+        .withMessage('Το ΑΜΚΑ πρέπει να περιέχει μόνο αριθμούς.'),
+    validateRequestSchema,
+    basicsControllers.createBasics);
 
 
 router.patch('/:pid/basic',
-    body('amka').isLength({ min: 11, max: 11 }).withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.'),
+    body('amka')
+        .isLength({ min: 11, max: 11 }).
+        withMessage('Το ΑΜΚΑ πρέπει να περιέχει ακριβώς 11 χαρακτήρες.')
+        .matches('^[0-9]+$')
+        .withMessage('Το ΑΜΚΑ πρέπει να περιέχει μόνο αριθμούς.'),
     validateRequestSchema,
     basicsControllers.updateBasics);
 
@@ -77,11 +96,15 @@ router.get('/:pid/anamnistiko/allergies', anaminstikoControllers.getAllergies);
 
 router.post('/:pid/anamnistiko/allergies', anaminstikoControllers.createAtomikoAllergies);
 
+router.post('/:pid/anamnistiko/allergies_loaded', anaminstikoControllers.addAtomikoAllergy)
+
 router.delete('/:pid/anamnistiko/allergies/:allergyId', anaminstikoControllers.removeAtomikoAllergy);
 
 router.get('/:pid/anamnistiko/klironomiko', anaminstikoControllers.getKlironomiko);
 
 router.post('/:pid/anamnistiko/klironomiko', anaminstikoControllers.createKlironomiko);
+
+router.post('/:pid/anamnistiko/klironomiko_loaded', anaminstikoControllers.addKlironomiko);
 
 router.delete('/:pid/anamnistiko/klironomiko/:klironomikoId', anaminstikoControllers.removeKlironomikoCondition);
 
@@ -102,6 +125,8 @@ router.patch('/:pid/anamnistiko/gynaikologiko/', anaminstikoControllers.updateGy
 router.get('/:pid/anamnistiko/gynaikologiko/pregnacies', anaminstikoControllers.getPregnacies);
 
 router.post('/:pid/anamnistiko/gynaikologiko/pregnacy', anaminstikoControllers.createPregnacy);
+
+router.patch('/:pid/anamnistiko/gynaikologiko/pregnacy/:pregnacyId', anaminstikoControllers.updatePregnacy);
 
 router.delete('/:pid/anamnistiko/gynaikologiko/pregnacy/:pregnacyId', anaminstikoControllers.removePregnacy);
 

@@ -27,6 +27,7 @@ const getFiles = async (req, res, next) =>{
         }
         filesList.push(exam)
     }
+    
     res.json({filesList:filesList})
     
 }

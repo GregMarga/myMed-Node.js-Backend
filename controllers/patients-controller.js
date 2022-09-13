@@ -17,7 +17,7 @@ const getAllpatients = async (req, res, next) => {
             'diagnosis': { $regex: `^${q.diagnosis}`, '$options': 'xi' },
             // 'age':{$regex:'', '$options' : 'xi'},
             'tel': { $regex: `${q.tel}`, '$options': 'xi' },
-            'amka': { $regex: `${q.amka}`, '$options': 'xi' },
+            'amka': { $regex: `^${q.amka}`, '$options': 'xi' },
         }).sort('-date');
     } catch (err) {
         console.log(err)
