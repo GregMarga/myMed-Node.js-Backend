@@ -505,7 +505,7 @@ const createDiagnosis = async (req, res, next) => {
     const { _id, name, status, dateOfDiagnosis, dateOfHealing } = req.body;
     let patient, visit;
 
-    if (visitId === 'null') {
+    if (visitId === 'null' || visitId === 'new') {
         return next(new HttpError('Για την δημιουργία μιας διάγνωσης, πρέπει πρώτα να δημιουργηθεί η αντικειμενική εξέταση', 404))
     }
 
@@ -690,7 +690,7 @@ const createTherapeia = async (req, res, next) => {
     const { _id, condition, posotita, syxnotita, duration, name, ATC_name } = req.body;
     let patient, visit;
 
-    if (visitId === 'null') {
+    if (visitId === 'null' || visitId === 'new') {
         return next(new HttpError('Για την δημιουργία μιας νέας θεραπείας, πρέπει πρώτα να δημιουργηθεί η αντικειμενική εξέταση', 404))
     }
 

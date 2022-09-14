@@ -15,8 +15,8 @@ module.exports = {
         πατήστε για να επιβεβαιώσετε το email
       </a>
       <div>Μην μοιραστείτε αυτό τον σύνδεσμο με κανέναν.</div>
-    `,      
-    text: `Copy and paste this link:'http://localhost:3000/${id}/emailconfirmation'`
+    `,
+    text: `Copy and paste this link:${process.env.LOGGIN_EMAIL_LINK}/${id}/emailconfirmation`
   })
-  
+
 }
