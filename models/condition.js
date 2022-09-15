@@ -12,7 +12,7 @@ const conditionSchema = Schema({
     atomiko: { type: Boolean, required: false },
     diagnosis: { type: Boolean, required: false },
 
-    visit: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Visit' }],
+    diagnosis: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Diagnosis' }],
     patient: { type: mongoose.Types.ObjectId, required: true, ref: 'Patient' },
 
 

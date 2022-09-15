@@ -21,7 +21,7 @@ const getConditionsbyPatientId = async (req, res, next) => {
     const patientId = req.params.pid;
     let conditions, conditionsList = []
     try {
-        conditions = await Condition.find({ patient: patientId })
+        conditions = await Condition.find({ patient: patientId }).sort({ field: 'asc', _id: -1 });
     } catch (err) {
         console.log(err)
         return next(new HttpError('Αποτυχία φόρτωσης του ατομικού ιστορικού.', 500))
