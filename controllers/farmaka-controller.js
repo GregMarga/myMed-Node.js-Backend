@@ -11,7 +11,7 @@ const getFarmakabyPatientId = async (req, res, next) => {
     const patientId = req.params.pid;
     let farmaka;
     try {
-        farmaka = await Farmako.find({ patient: patientId })
+        farmaka = await Farmako.find({ patient: patientId }).sort({ field: 'asc', _id: -1 });
     } catch (err) {
         console.log(err)
         return next(new HttpError('Αποτυχία φόρτωσης φαρμακευτικής αγωγής.', 500))
@@ -94,42 +94,32 @@ const deleteFarmako = async (req, res, next) => {
     const patientId = req.params.pid;
     const farmakoId = req.params.farmakoId;
 
-    let farmako,therapeia,visit;
+    let farmako, patient;
 
+    try {
+        patient = await Patient.findById(patientId);
+    } catch (err) {
+        return next(new HttpError('Η διαγραφή της πάθησης απέτυχε.', 500));
+    }
+    if (!patient) {
+        return next(new HttpError('Δεν υπάρχει καταγεγραμμένος ο συγκεκριμένος ασθενής.', 404));
+    }
     try {
         farmako = await Farmako.findById(farmakoId).populate('patient');
     } catch (err) {
         console.log(err)
         return next(new HttpError('Δεν βρέθηκε η φαρμακευτική αγωγή προς διαγραφή.', 500));
     }
-    for (let i = 0; i < farmako.therapeia.length; i++) {
-        try {
-            therapeia = await Therapeia.findById(farmako.therapeia[i]).populate('visit');
-        } catch (err) {
-            console.log(err)
-            return next(new HttpError('Δεν βρέθηκε η φαρμακευτική αγωγή προς διαγραφή.', 500));
-        }
-        try {
-            const sess = await mongoose.startSession();
-            sess.startTransaction();
-            therapeia.deleteOne({ session: sess })
-            therapeia.visit.therapeia.pull(therapeia);
-            await therapeia.visit.save({ session: sess });
-            await sess.commitTransaction();
-    
-        } catch (err) {
-            console.log(err)
-            const error = new HttpError('Αποτυχία διαγραφής φαρμακευτικής αγωγής,προσπαθήστε ξανά.', 500);
-            return next(error);
-        };
+    if (!farmako) {
+        return next(new HttpError('Δεν υπάρχει καταγεγραμμένο αυτό το φάρμακο.', 404));
     }
 
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
-        await farmako.remove({ session: sess });
-        farmako.patient.farmako.pull(farmako);
-        await farmako.patient.save({ session: sess });
+        await farmako.deleteOne({ session: sess });
+        patient.farmako.pull(farmako);
+        await patient.save({ session: sess });
         await sess.commitTransaction();
 
     } catch (err) {

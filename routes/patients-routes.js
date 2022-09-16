@@ -127,12 +127,6 @@ router.patch('/:pid/anamnistiko/gynaikologiko/pregnacy/:pregnacyId', anaminstiko
 
 router.delete('/:pid/anamnistiko/gynaikologiko/pregnacy/:pregnacyId', anaminstikoControllers.removePregnacy);
 
-// router.get('/:pid/anamnistiko/:gender', anaminstikoControllers.getAnamnstiko);
-
-// router.post('/:pid/anamnistiko', anaminstikoControllers.createAnamnistiko);
-
-// router.patch('/:pid/anamnistiko', anaminstikoControllers.updateAnamnistiko);
-
 router.get('/:pid/farmaka', farmakaController.getFarmakabyPatientId);
 
 router.post('/:pid/farmaka', farmakaController.createFarmako);
@@ -141,8 +135,6 @@ router.patch('/:pid/farmaka/:farmakoId', farmakaController.updateFarmako);
 
 router.delete('/:pid/farmaka/:farmakoId', farmakaController.deleteFarmako);
 
-// router.post('/:pid/farmaka/name', farmakaController.test);
-
 router.get('/:pid/farmako/name/:name', farmakoController.drugNameHits);
 
 router.get('/:pid/farmako/ATC_name/:name', farmakoController.drugATCNameHits);
@@ -150,8 +142,6 @@ router.get('/:pid/farmako/ATC_name/:name', farmakoController.drugATCNameHits);
 router.get('/:pid/conditions/name/:name', conditionsController.conditionHits);
 
 router.get('/:pid/conditions', atomikoController.getConditionsbyPatientId);
-
-// router.post('/:pid/conditions', atomikoController.createConditionAtomiko);
 
 router.get('/:pid/allergies', atomikoController.getAllergiesbyPatientId);
 
@@ -172,18 +162,6 @@ router.get('/:pid/visits/:visitId', visitControllers.getAntikeimeniki);
 router.patch('/:pid/visits/:visitId/antikeimeniki', visitControllers.updateAntikeimeniki);
 
 router.get('/:pid/visits', visitControllers.getAllVisits);
-
-// router.get('/:pid/visits/info', visitControllers.getVisitsInfo);
-
-// router.get('/:pid/visits.dates', visitControllers.getPatientVisitDates);
-
-// router.get('/:pid/visits/:vid', visitControllers.getPatientVisitById);
-
-// router.get('/visits/createVisitId', visitControllers.createVisitId);
-
-// router.patch('/:pid/visits/:visitId', visitControllers.updateVisit);
-
-// router.delete('/:pid/visits/:vid', visitControllers.deleteVisit);
 
 router.post('/:pid/visit/:visitId/antikeimeniki', visitControllers.createAntikeimeniki);
 
@@ -208,6 +186,8 @@ router.get('/:pid/visit/:visitId/therapeia', visitControllers.getTherapeia);
 router.post('/:pid/visit/:visitId/therapeia', visitControllers.createTherapeia);
 
 router.delete('/:pid/visit/:visitId/therapeia/:therapeiaId', visitControllers.removeTherapeia);
+
+router.patch('/:pid/visit/:visitId/therapeia/:therapeiaId', visitControllers.updateTherapeia);
 
 router.get('/:pid/exams', examsController.getFiles)
 

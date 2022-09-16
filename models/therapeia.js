@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 
 const therapeiaSchmema = Schema({
     condition: { type: String, required: false },
+    epanalipsi: { type: String, required: false },
     posotita: { type: String, required: false },
     syxnotita: { type: String, required: false },
     duration: { type: String, required: false },

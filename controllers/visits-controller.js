@@ -255,30 +255,8 @@ const createAntikeimeniki = async (req, res, next) => {
             }
         }
 
-        //     diagnosis[i].visit.push(_id)
-        //     try {
-        //         await diagnosis[i].save();
-        //         createdVisit.diagnosis.push(diagnosis[i])
-        //     } catch (err) {
-        //         console.log(err)
-        //         const error = new HttpError('Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500);
-        //         return next(error);
-        //     }
 
-        // }
-        // for (let i = 0; i < conditions.length; i++) {
 
-        //     conditions[i].visit.push(_id)
-        //     try {
-        //         await conditions[i].save();
-        //         createdVisit.conditions.push(conditions[i])
-        //     } catch (err) {
-        //         console.log(err)
-        //         const error = new HttpError('Η δημιουργία της αντικειμενικής εξέτασης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500);
-        //         return next(error);
-        //     }
-
-        // }
 
         try {
             therapeias = await Therapeia.find({ visit: visit._id }).populate('farmako');
@@ -290,24 +268,57 @@ const createAntikeimeniki = async (req, res, next) => {
 
 
         for (let i = 0; i < therapeias.length; i++) {    // an exei therapeytei min tin prostheseis
-            let d1 = new Date();
-            let d2 = new Date(therapeias[i].farmako.dateOfEnd)
+            let therapeiaId = mongoose.Types.ObjectId();
+            let farmakoId = mongoose.Types.ObjectId();
+            let dateOfEnd;
+            console.log(therapeias[i])
+            let days = Number(therapeias[i].duration.trim().split(/\s+/)[0])
+            console.log(visit.date)
+            console.log(therapeias[i].duration, days)
+            switch (therapeias[i].epanalipsi) {
+                case '1 μήνας':
+                    dateOfEnd = new Date(date)
+                    dateOfEnd = dateOfEnd.setDate(dateOfEnd.getDate() + days)
+                    break;
+                case '2 μήνες':
+                    dateOfEnd = new Date(date)
+                    dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 2)
+                    break;
+                case '3 μήνες':
+                    dateOfEnd = new Date(date)
+                    dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 3)
+                    break;
+                case '4 μήνες':
+                    dateOfEnd = new Date(date)
+                    dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 4)
+                    break;
+                case '5 μήνες':
+                    dateOfEnd = new Date(date)
+                    dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 5)
+                    break;
+                case '6 μήνες':
+                    dateOfEnd = new Date(date)
+                    dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 6)
+                    break;
 
-
-            if (d1 > d2 && !!therapeias[i].condition.dateOfEnd) {
-                continue;
             }
 
-            let farmako;
-            try {                                        //δεν βρίσκω παλιά πρέπει να δημιουργήσω νέα...
-                farmako = await Farmako.findById(therapeias[i].farmako);
-            } catch (err) {
-                console.log(err)
-                return next(new HttpError('Η φόρτωση της λίστας των διαγνώσεων απέτυχε.', 500));
-            }
+            const createdFarmako = new Farmako({
+                _id: farmakoId,
+                name: therapeias[i].drugName,
+                ATC_name: therapeias[i].ATC_name,
+                dateOfStart: date,
+                dateOfEnd: dateOfEnd,
+
+                therapeia: therapeiaId,
+                patient: patientId
+            })
+
 
             const createdTherapeia = new Therapeia({
+                _id: therapeiaId,
                 condition: therapeias[i].condition,
+                epanalipsi: therapeias[i].epanalipsi,
                 posotita: therapeias[i].posotita,
                 syxnotita: therapeias[i].syxnotita,
                 duration: therapeias[i].duration,
@@ -315,15 +326,16 @@ const createAntikeimeniki = async (req, res, next) => {
                 ATC_name: therapeias[i].ATC_name,
 
                 visit: _id,     /////////////
-                farmako: farmako._id
+                farmako: farmakoId
             })
             try {
                 const sess = await mongoose.startSession();
                 sess.startTransaction();
-                farmako.therapeia.push(createdTherapeia)
+
                 await createdTherapeia.save({ session: sess })
-                await farmako.save({ session: sess });
+                await createdFarmako.save({ session: sess });
                 createdVisit.therapeia.push(createdTherapeia)
+                patient.farmako.push(createdFarmako);
                 await sess.commitTransaction();
             } catch (err) {
                 console.log(err)
@@ -817,7 +829,7 @@ const removeDiagnosis = async (req, res, next) => {
 const getTherapeia = async (req, res, next) => {
     const visitId = req.params.visitId;
 
-    let visit, therapeiaList = [], farmako, therapeia;
+    let visit, therapeiaList = [], therapeia;
     try {
         visit = await Visit.findById(visitId);
     } catch (err) {
@@ -834,20 +846,16 @@ const getTherapeia = async (req, res, next) => {
             console.log(err)
             return next(new HttpError('Η φόρτωση της θεραπείας απέτυχε.', 500));
         }
-        try {
-            farmako = await Farmako.findOne({ therapeia: visit.therapeia[i] });
-        } catch (err) {
-            console.log(err)
-            return next(new HttpError('Η φόρτωση της θεραπείας απέτυχε.', 500));
-        }
+
         let enhancedTherapeia = {
             _id: therapeia._id,
             condition: therapeia.condition,
+            epanalipsi: therapeia.epanalipsi,
             posotita: therapeia.posotita,
             syxnotita: therapeia.syxnotita,
             duration: therapeia.duration,
-            name: farmako.name,
-            ATC_name: farmako.ATC_name
+            name: therapeia.drugName,
+            ATC_name: therapeia.ATC_name
         }
         therapeiaList.push(enhancedTherapeia)
     }
@@ -857,11 +865,17 @@ const createTherapeia = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId
 
-    const { _id, condition, posotita, syxnotita, duration, name, ATC_name } = req.body;
+    const { _id, epanalipsi, condition, posotita, syxnotita, duration, name, ATC_name } = req.body;
     let patient, visit;
 
-    let existingFarmako;
+
     let therapeiaId = mongoose.Types.ObjectId();
+    let dateOfEnd;
+    let days = Number(duration.trim().split(/\s+/)[0])
+
+
+
+
 
     if (visitId === 'null' || visitId === 'new') {
         return next(new HttpError('Για την δημιουργία μιας νέας θεραπείας, πρέπει πρώτα να δημιουργηθεί η αντικειμενική εξέταση', 404))
@@ -887,69 +901,171 @@ const createTherapeia = async (req, res, next) => {
         return next(new HttpError('Δεν υπάρχει καταγεγραμμένη επίσκεψη.', 404));
     }
 
+    switch (epanalipsi) {
+        case '1 μήνας':
+            dateOfEnd = new Date(visit.date)
+            dateOfEnd = dateOfEnd.setDate(dateOfEnd.getDate() + days)
+            break;
+        case '2 μήνες':
+            dateOfEnd = new Date(visit.date)
+            dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 2)
+            break;
+        case '3 μήνες':
+            dateOfEnd = new Date(visit.date)
+            dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 3)
+            break;
+        case '4 μήνες':
+            dateOfEnd = new Date(visit.date)
+            dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 4)
+            break;
+        case '5 μήνες':
+            dateOfEnd = new Date(visit.date)
+            dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 5)
+            break;
+        case '6 μήνες':
+            dateOfEnd = new Date(visit.date)
+            dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 6)
+            break;
+
+    }
+
+
+
     const createdTherapeia = new Therapeia({
         _id: therapeiaId,
         condition,
+        epanalipsi,
         posotita,
         syxnotita,
         duration,
+        drugName: name,
+        ATC_name,
 
         farmako: _id,
         visit: visitId
     })
 
+    const createdFarmako = new Farmako({
+        _id,
+        name: name,
+        ATC_name: ATC_name,
+        dateOfStart: visit.date,
+        dateOfEnd: dateOfEnd,
+
+        therapeia: therapeiaId,
+        patient: patientId
+    })
     try {
-        existingFarmako = await Farmako.findById(_id);
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await createdFarmako.save({ session: sess });
+        await createdTherapeia.save({ session: sess });
+        patient.farmako.push(createdFarmako);
+        visit.therapeia.push(createdTherapeia);
+        await patient.save({ session: sess });
+        await visit.save({ session: sess });
+        await sess.commitTransaction();
     } catch (err) {
         console.log(err)
-        return next(new HttpError('Η δημιουργία της θεραπείας απέτυχε.', 500));
+        return next(new HttpError('Η δημιουργία της διάγνωσης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
     }
-    if (existingFarmako) {    ///an den yparxei  to farmako
-        const createdFarmako = new Farmako({
-            _id,
-            name: name,
-            ATC_name: ATC_name,
-            dateOfStart: visit.date,
 
-            therapeia: [therapeiaId],
-            patient: patientId
-        })
-        try {
-            const sess = await mongoose.startSession();
-            sess.startTransaction();
-            await createdFarmako.save({ session: sess });
-            await createdTherapeia.save({ session: sess });
-            patient.farmako.push(createdFarmako);
-            visit.therapeia.push(createdTherapeia);
-            await patient.save({ session: sess });
-            await visit.save({ session: sess });
-            await sess.commitTransaction();
-        } catch (err) {
-            console.log(err)
-            return next(new HttpError('Η δημιουργία της διάγνωσης απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
-        }
-    }
-    else if (!!existingFarmako) {   // an yparxei idi to farmako
-        try {
-            const sess = await mongoose.startSession();
-            sess.startTransaction();
-            existingFarmako.therapeia.push(createdTherapeia)
-            await existingFarmako.save({ session: sess });
-            await createdTherapeia.save({ session: sess });
 
-            visit.therapeia.push(createdTherapeia);
-            await patient.save({ session: sess });
-            await visit.save({ session: sess });
-            await sess.commitTransaction();
-        } catch (err) {
-            console.log(err)
-            return next(new HttpError('Η δημιουργία της θεραπείας απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
-        }
-    }
 
     res.json(createdTherapeia)
 }
-const updateTherapeia = async (req, res, next) => { }
+const updateTherapeia = async (req, res, next) => {
+    const therapeiaId = req.params.therapeiaId
+
+    const { epanalipsi, duration, posotita, syxnotita } = req.body;
+
+    let farmako;
+    let therapeia;
+
+    let dateOfEnd;
+    let days = Number(duration.trim().split(/\s+/)[0]);
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///ENIMEROSI THERAPEIAS
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    try {
+        therapeia = await Therapeia.findById(therapeiaId);
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η επεξεργασία της θεραπείας απέτυχε.', 500));
+    }
+    if (!therapeia) {
+        return next(new HttpError('Δεν υπάρχει καταγεγραμμένη θεραπεία.', 404));
+    }
+
+    therapeia.epanalipsi = epanalipsi;
+    therapeia.posotita = posotita;
+    therapeia.syxnotita = syxnotita;
+    therapeia.duration = duration;
+
+    try {
+        await therapeia.save()
+    } catch (err) {
+        return next(new HttpError('Η επεξεργασία της θεραπείας απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// ELEGXOS GIA ENIMEROSI FARMAKOY
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    try {
+        farmako = await Farmako.findById(therapeia.farmako);
+    } catch (err) {
+        console.log(err)
+        return next(new HttpError('Η επεξεργασία της θεραπείας απέτυχε.', 500));
+    }
+    if (!!farmako) {    /// an  yparxei farmako
+        let dateOfStart = farmako.dateOfStart;
+        switch (epanalipsi) {
+            case '1 μήνας':
+                dateOfEnd = new Date(dateOfStart)
+                dateOfEnd = dateOfEnd.setDate(dateOfEnd.getDate() + days)
+                break;
+            case '2 μήνες':
+                dateOfEnd = new Date(dateOfStart)
+                dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 2)
+                break;
+            case '3 μήνες':
+                dateOfEnd = new Date(dateOfStart)
+                dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 3)
+                break;
+            case '4 μήνες':
+                dateOfEnd = new Date(dateOfStart)
+                dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 4)
+                break;
+            case '5 μήνες':
+                dateOfEnd = new Date(dateOfStart)
+                dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 5)
+                break;
+            case '6 μήνες':
+                dateOfEnd = new Date(dateOfStart)
+                dateOfEnd = dateOfEnd.setMonth(dateOfEnd.getMonth() + 6)
+                break;
+        }
+        farmako.dateOfEnd = dateOfEnd
+        try {
+            await farmako.save();
+        } catch (err) {
+            return next(new HttpError('Η επεξεργασία της θεραπείας απέτυχε.', 500));
+        }
+    }
+
+    res.json(therapeia)
+}
+
+
 const removeTherapeia = async (req, res, next) => {
     const patientId = req.params.pid;
     const visitId = req.params.visitId;
@@ -993,25 +1109,34 @@ const removeTherapeia = async (req, res, next) => {
         console.log(err)
         return next(new HttpError('Η διαγραφή της θεραπείας απέτυχε.', 500));
     }
-
-    try {
-        const sess = await mongoose.startSession();
-        sess.startTransaction();
-        farmako.therapeia.pull(therapeia)
-        if (farmako.therapeia.length > 0) {
-            await farmako.save({ session: sess });
-        } else {
-            await farmako.deleteOne({ session: sess });
+    if (!farmako) {   // an den iparxei farmako
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            await therapeia.deleteOne({ session: sess });
+            visit.therapeia.pull(therapeia);
+            await visit.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η διαγραφή της θεραπείας απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
         }
-        await therapeia.deleteOne({ session: sess });
-        visit.therapeia.pull(therapeia);
-        patient.farmako.pull(farmako);
-        await patient.save({ session: sess });
-        await visit.save({ session: sess });
-        await sess.commitTransaction();
-    } catch (err) {
-        console.log(err)
-        return next(new HttpError('Η διαγραφή της θεραπείας απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
+    }
+    if (!!farmako) {        // an iparxei farmako
+        try {
+            const sess = await mongoose.startSession();
+            sess.startTransaction();
+            farmako.deleteOne({ session: sess })
+            patient.farmako.pull(farmako);
+            await patient.save({ session: sess });
+            await therapeia.deleteOne({ session: sess });
+            visit.therapeia.pull(therapeia);
+            await visit.save({ session: sess });
+            await sess.commitTransaction();
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError('Η διαγραφή της θεραπείας απέτυχε, παρακαλώ προσπαθήστε ξανά.', 500));
+        }
     }
     res.json(therapeia)
 }

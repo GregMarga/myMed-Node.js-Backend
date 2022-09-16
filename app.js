@@ -28,7 +28,7 @@ app.use('/uploads/exams', express.static(path.join('uploads', 'exams')));
 
 app.use('/users', userRouter)
 app.use('/patients', patientsRouter);
-app.use('/appointments', appointmentRouter);
+// app.use('/appointments', appointmentRouter);
 
 app.use((req, res, next) => {
     const error = new HttpError('Could not find this route.', 404);
